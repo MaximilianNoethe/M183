@@ -1,0 +1,15 @@
+[Unit]
+Description=Run honeypot log parser every 5 minutes
+Documentation=file:///opt/honeypot/HANDOFF.md
+
+[Timer]
+# Fire 2 min after boot, then every 5 minutes. Persistent=true catches up a
+# missed run if the box was off. This is the systemd-timer alternative to the
+# cron line `*/5 * * * * python3 .../log_parser.py` from HANDOFF.md.
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+Unit=honeypot-parser.service
+
+[Install]
+WantedBy=timers.target

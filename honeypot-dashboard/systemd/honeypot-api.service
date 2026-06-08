@@ -1,0 +1,26 @@
+[Unit]
+Description=Honeypot dashboard Flask API
+After=network-online.target
+Wants=network-online.target
+
+# NOTE: Week 3 deliverable. Unit is scaffolded now; api/app.py is implemented
+# later. Bind to localhost only — nginx (Week 6) terminates TLS and proxies in.
+[Service]
+Type=simple
+User=cowrie
+Group=cowrie
+WorkingDirectory=/opt/honeypot
+Environment=PATH=/opt/honeypot/.venv/bin:/usr/bin:/bin
+EnvironmentFile=/opt/honeypot/.env
+ExecStart=/opt/honeypot/.venv/bin/python3 -m api.app
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

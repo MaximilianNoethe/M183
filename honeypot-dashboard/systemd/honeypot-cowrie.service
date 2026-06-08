@@ -1,0 +1,26 @@
+[Unit]
+Description=Cowrie SSH/Telnet honeypot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=cowrie
+Group=cowrie
+WorkingDirectory=/opt/honeypot/cowrie
+Environment=VIRTUAL_ENV=/opt/honeypot/cowrie/cowrie-env
+Environment=PATH=/opt/honeypot/cowrie/cowrie-env/bin:/usr/bin:/bin
+ExecStart=/opt/honeypot/cowrie/bin/cowrie start
+ExecStop=/opt/honeypot/cowrie/bin/cowrie stop
+PIDFile=/opt/honeypot/cowrie/var/run/cowrie.pid
+Restart=on-failure
+RestartSec=10
+
+# Hardening — Cowrie should never need elevated capabilities.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

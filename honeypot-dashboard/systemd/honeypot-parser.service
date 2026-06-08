@@ -1,0 +1,24 @@
+[Unit]
+Description=Honeypot log parser (cowrie.json -> SQLite + GeoIP)
+After=network-online.target honeypot-cowrie.service
+Wants=network-online.target
+
+# Type=oneshot: the parser runs to completion and exits. It is triggered
+# periodically by honeypot-parser.timer (every 5 minutes), not kept resident.
+[Service]
+Type=oneshot
+User=cowrie
+Group=cowrie
+WorkingDirectory=/opt/honeypot
+Environment=PATH=/opt/honeypot/.venv/bin:/usr/bin:/bin
+EnvironmentFile=/opt/honeypot/.env
+ExecStart=/opt/honeypot/.venv/bin/python3 -m parser.log_parser
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
