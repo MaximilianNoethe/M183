@@ -1,0 +1,46 @@
+# Bootstrap / working docs — kept local, not committed
+CLAUDE.md
+HANDOFF.md
+
+# Database — contains real attacker data
+honeypot.db
+*.db-shm
+*.db-wal
+
+# Environment secrets
+.env
+
+# Cowrie runtime data
+cowrie/var/
+cowrie/cowrie-env/
+
+# Logs
+logs/*.log
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / tooling local config
+.vscode/settings.json
+.idea/
+.claude/settings.local.json
+
+# Certs
+*.pem
+*.key
+*.crt
