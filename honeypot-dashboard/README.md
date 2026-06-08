@@ -3,26 +3,9 @@
 > Personal security research project — real SSH/Telnet honeypot collecting genuine attack data from the internet, visualized on a live world map dashboard.
  
 **Stack:** Python · Flask · Cowrie · SQLite · Leaflet.js · Chart.js  
-**Server:** Hetzner CX22 · Ubuntu 22.04  
-**Cost:** ~4 CHF/month (Free trial used)
- 
----
- 
-## Quick Start
- 
-```bash
-git clone https://github.com/YOUR_USERNAME/honeypot-dashboard
-cd honeypot-dashboard
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env        # edit with your values
-python3 -m api.app          # dashboard on http://localhost:8080
-```
- 
-For full VPS deployment see [`scripts/setup_server.sh`](scripts/setup_server.sh).
- 
----
- 
+**Server:** Kamatera · Ubuntu 22.04 · 1 vCPU / 2 GB / 30 GB · Frankfurt  
+**Cost:** Kamatera 30-day free trial (hourly billing; delete server before trial ends)
+
 ## Architecture
  
 ```
@@ -49,7 +32,7 @@ Internet (real attackers)
  
 | Week | Topic | Status |
 |------|-------|--------|
-| 1 | VPS · Cowrie · Firewall | ⬜ Not started |
+| 1 | VPS · Cowrie · Firewall | 🟡 In progress |
 | 2 | Log Parser · SQLite · GeoIP | ⬜ Not started |
 | 3 | Flask API · Auth · Security Headers | ⬜ Not started |
 | 4 | Dashboard · World Map · Charts | ⬜ Not started |
@@ -68,23 +51,28 @@ Internet (real attackers)
 ### Week 1 — Infrastructure & Honeypot Sensor
  
 **Period:** `08.06.2026`  
-**Status:** ⬜ Not started
+**Status:** VPS läuft, Honeypot noch nicht live
  
 #### Planned
-- [ ] Hetzner CX22 VPS bestellen, Ubuntu 22.04
-- [ ] Echten SSH auf Port 2222 verschieben
-- [ ] UFW Firewall konfigurieren (Ports 22, 23, 2222, 8080)
-- [ ] Cowrie installieren und konfigurieren (JSON-Logs, Fake-Hostname)
-- [ ] iptables NAT: Port 22 → Cowrie Port 2222
-- [ ] Ersten Log-Eintrag in `cowrie.json` bestätigen
+- [ ] Kamatera VPS bestellen, Ubuntu 22.04
+- [ ] Echten SSH auf Port 2222 verschieben —> *Skript fertig, noch nicht ausgeführt*
+- [ ] UFW Firewall konfigurieren (Ports 22, 23, 2222, 8080) —> *Skript fertig, noch nicht ausgeführt*
+- [ ] Cowrie installieren und konfigurieren (JSON-Logs, Fake-Hostname) —> *Skript fertig, noch nicht ausgeführt*
+- [ ] iptables NAT: Port 22 -> Cowrie Port 2222 -> *Skript fertig, noch nicht ausgeführt*
+- [ ] Ersten Log-Eintrag in `cowrie.json` bestätigen —> *offen*
 #### Actually done
-> *(Fill in after the session)*
- 
--
+- Kamatera VPS bestellt & läuft: Frankfurt, Ubuntu 22.04, Type B, 1 vCPU / 2 GB RAM / 30 GB SSD, öffentliche WAN-IP.
+- SSH-Key erstellt: auf dem Mac (`~/.ssh/id_ed25519.pub`).
+- Kompletter Week-1-Code geschrieben: (lokal, noch nicht auf dem Server ausgeführt):
+  - `parser/db.py` -> DB-Schema + Testss
+  - `scripts/setup_server.sh` -> SSH Hardening, UFW, iptables NAT
+  - `scripts/setup_cowrie.sh` —> Cowrie Install + JSON Logging
+  - `systemd/` —> Units für Cowrie, Parser Timer und API
+- Projektgerüst: für alle 6 Wochen + `.gitignore`, `requirements.txt`, `.env.example`.
+
 #### Problems & notes
-> *(Anything unexpected, links, commands that helped)*
- 
--
+- Hetzner → Kamatera gewechselt um den 30-Tage-Gratis-Trial zu nutzen.
+- Reminder: Server vor Trial-Ende (30 Tage) löschen, sonst wird abgezahlt.
 ---
  
 ### Week 2 — Log Parser & Database Pipeline
