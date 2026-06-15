@@ -86,6 +86,58 @@ def init_db(db_path: str | None = None) -> None:
         conn.close()
 
 
+def insert_attack(conn, *, timestamp, src_ip, event_type, username=None,
+                  password=None, raw_command=None, country=None, city=None,
+                  latitude=None, longitude=None):
+    conn.execute(
+        """INSERT INTO attacks
+               (timestamp, src_ip, country, city, latitude, longitude,
+                username, password, event_type, raw_command)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (timestamp, src_ip, country, city, latitude, longitude,
+         username, password, event_type, raw_command),
+    )
+
+
+def get_offset(conn, log_path):
+    row = conn.execute(
+        "SELECT byte_offset FROM parser_state WHERE log_path = ?", (log_path,)
+    ).fetchone()
+    return row["byte_offset"] if row else 0
+
+
+def set_offset(conn, log_path, offset, last_run):
+    conn.execute(
+        """INSERT INTO parser_state (log_path, byte_offset, last_run)
+           VALUES (?, ?, ?)
+           ON CONFLICT(log_path) DO UPDATE SET
+               byte_offset = excluded.byte_offset,
+               last_run = excluded.last_run""",
+        (log_path, offset, last_run),
+    )
+
+
+def cache_get(conn, ip):
+    return conn.execute(
+        "SELECT country, city, latitude, longitude FROM ip_cache WHERE ip = ?",
+        (ip,),
+    ).fetchone()
+
+
+def cache_set(conn, ip, country, city, latitude, longitude, last_lookup):
+    conn.execute(
+        """INSERT INTO ip_cache (ip, country, city, latitude, longitude, last_lookup)
+           VALUES (?, ?, ?, ?, ?, ?)
+           ON CONFLICT(ip) DO UPDATE SET
+               country = excluded.country,
+               city = excluded.city,
+               latitude = excluded.latitude,
+               longitude = excluded.longitude,
+               last_lookup = excluded.last_lookup""",
+        (ip, country, city, latitude, longitude, last_lookup),
+    )
+
+
 if __name__ == "__main__":
     # `python3 -m parser.db` initialises the database in place.
     init_db()
