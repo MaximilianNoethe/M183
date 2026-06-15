@@ -1,19 +1,74 @@
-"""Week 2: read cowrie.json, deduplicate, enrich with GeoIP, insert into SQLite.
+"""Read new lines from cowrie.json, enrich with GeoIP, store in SQLite.
 
-Reads new lines since the last byte offset (stored in parser_state), parses each
-JSON event, keeps security-relevant fields, and inserts into `attacks`. Run via
-`python3 -m parser.log_parser` (systemd timer / cron every 5 min).
-
-STUB — implemented in Week 2.
+Resumes from the byte offset saved in parser_state so re-runs don't double-insert.
+Run with `python3 -m parser.log_parser` (systemd timer every 5 min).
 """
 
-from __future__ import annotations
+import json
+import os
+from datetime import datetime, timezone
+
+from parser import db, geoip
+
+TRACKED = {
+    "cowrie.login.failed",
+    "cowrie.login.success",
+    "cowrie.command.input",
+    "cowrie.session.connect",
+}
 
 
-def run() -> int:
-    """Parse new Cowrie log lines into the DB. Returns count of inserted rows."""
-    raise NotImplementedError("Week 2: log parser not implemented yet.")
+def _log_path():
+    return os.getenv("COWRIE_LOG_PATH", "/opt/honeypot/cowrie/var/log/cowrie/cowrie.json")
+
+
+def run(log_path=None, db_path=None):
+    log_path = log_path or _log_path()
+    db.init_db(db_path)
+    if not os.path.exists(log_path):
+        return 0
+
+    conn = db.get_connection(db_path)
+    inserted = 0
+    try:
+        offset = db.get_offset(conn, log_path)
+        with open(log_path, "r", encoding="utf-8") as fh:
+            fh.seek(offset)
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if event.get("eventid") not in TRACKED:
+                    continue
+                ip = event.get("src_ip")
+                if not ip:
+                    continue
+                country, city, lat, lon = geoip.get_geo(ip, conn)
+                db.insert_attack(
+                    conn,
+                    timestamp=event.get("timestamp"),
+                    src_ip=ip,
+                    event_type=event.get("eventid"),
+                    username=event.get("username"),
+                    password=event.get("password"),
+                    raw_command=event.get("input"),
+                    country=country,
+                    city=city,
+                    latitude=lat,
+                    longitude=lon,
+                )
+                inserted += 1
+            new_offset = fh.tell()
+        db.set_offset(conn, log_path, new_offset, datetime.now(timezone.utc).isoformat())
+        conn.commit()
+    finally:
+        conn.close()
+    return inserted
 
 
 if __name__ == "__main__":
-    run()
+    print(f"Inserted {run()} new attack rows.")
