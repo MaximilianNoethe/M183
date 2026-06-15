@@ -35,8 +35,10 @@ create_user() {
     else
         log "User '${COWRIE_USER}' already exists."
     fi
-    mkdir -p "$(dirname "${COWRIE_HOME}")"
-    chown -R "${COWRIE_USER}:${COWRIE_USER}" "$(dirname "${COWRIE_HOME}")"
+    # Create the install dir itself and hand it to cowrie. (chown -R on the
+    # parent doesn't follow the /opt/honeypot symlink, so target it directly.)
+    mkdir -p "${COWRIE_HOME}"
+    chown -R "${COWRIE_USER}:${COWRIE_USER}" "${COWRIE_HOME}"
 }
 
 install_deps() {
@@ -58,6 +60,7 @@ python3 -m venv cowrie-env
 source cowrie-env/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
+pip install -e .   # installs cowrie itself + the twistd plugin / launcher
 EOF
 }
 
