@@ -31,18 +31,19 @@ Internet (echte Angreifer)
  
 | Week | Topic | Status |
 |------|-------|--------|
-| 1 | VPS · Cowrie · Firewall | ✅ Done — Honeypot live |
-| 2 | Log Parser · SQLite · GeoIP | 🟡 Code fertig, Deployment offen |
-| 3 | Flask API · Auth · Security Headers | ⬜ Not started |
-| 4 | Dashboard · World Map · Charts | ⬜ Not started |
-| 5 | Analysis · HIBP · Botnet Detection | ⬜ Not started |
-| 6 | HTTPS · Hardening · Documentation | ⬜ Not started |
+| 1 | VPS · Cowrie · Firewall | Fertig —> Honeypot live |
+| 2 | Log Parser · SQLite · GeoIP | Code fertig, Deployment offen |
+| 3 | Flask API · Auth · Security Headers | Nicht angefangen |
+| 4 | Dashboard · World Map · Charts | Nicht angefangen |
+| 5 | Analysis · HIBP · Botnet Detection | Nicht angefangen |
+| 6 | HTTPS · Hardening · Documentation | Nicht angefangen |
   
 ---
  
 ## Journal
  
 > Dieses Journal tracked was ich geplant habe vs. was ich wirklich erreicht habe in dieser Woche
+
 > Das Journal wird nach jedem Arbeitsblock geupdated
  
 ---
@@ -50,7 +51,7 @@ Internet (echte Angreifer)
 ### Week 1 — Infrastructure & Honeypot Sensor
  
 **Period:** `08.06.2026 – 15.06.2026`  
-**Status:** ✅ Honeypot live — fängt echte Angriffe aus dem Internet
+**Status:** Honeypot live —> fängt echte Angriffe aus dem Internet
  
 #### Geplant
 - Kamatera VPS bestellen, Ubuntu 22.04
@@ -58,37 +59,37 @@ Internet (echte Angreifer)
 - UFW Firewall konfigurieren (Ports 22, 23, 2222, 2223, 2224, 8080)
 - Cowrie installieren und konfigurieren (JSON-Logs, Fake-Hostname)
 - iptables NAT: Port 22/23 -> Cowrie 2223/2224
-- Ersten Log-Eintrag in `cowrie.json` bestätigen
+- Ersten Log-Eintrag in cowrie.json bestätigen
 #### Erledigt
 - Kamatera VPS bestellt & läuft: Frankfurt, Ubuntu 22.04, Type B, 1 vCPU / 2 GB RAM / 30 GB SSD, öffentliche WAN-IP. <img width="2500" height="548" alt="image" src="https://github.com/user-attachments/assets/57a92b28-a10d-4243-a96b-57c165949ff4" />
 
 - SSH-Key erstellt: auf dem Mac.
-- Kompletter Week-1-Code geschrieben: (lokal, noch nicht auf dem Server ausgeführt):
+- Kompletter 1. Woche Code geschrieben: (lokal, noch nicht auf dem Server ausgeführt):
   - parser/db.py -> DB-Schema + Testss
   - scripts/setup_server.sh -> SSH Hardening, UFW, iptables NAT
   - scripts/setup_cowrie.sh —> Cowrie Install + JSON Logging
   - systemd/ —> Units für Cowrie, Parser Timer und API
 - Projektgerüst: für alle 6 Wochen + .gitignore, requirements.txt, .env.example.
 
-**Deployment am 15.06.2026 — Honeypot ist live gegangen:**
-- Admin-User `max` mit SSH-Key + sudo angelegt, Root- und Passwort-Login deaktiviert, echter SSH auf Port 2222.
-- `setup_server.sh` ausgeführt: UFW aktiv, iptables NAT (öffentlich 22/23 → Cowrie 2223/2224).
-- `setup_cowrie.sh` ausgeführt: Cowrie als User `cowrie` im eigenen venv, JSON-Logging, Fake-Hostname `srv-prod-01`.
-- systemd-Service `honeypot-cowrie` läuft und startet automatisch beim Boot.
-- Erster Angriff bestätigt — eigener SSH-Test **und** bereits echte Bots aus dem Internet.
+**Deployment am 15.06.2026 —> Honeypot ist live gegangen:**
+- Admin User max mit SSH-Key + sudo angelegt, Root- und Passwort-Login deaktiviert, echter SSH auf Port 2222.
+- setup_server.sh ausgeführt: UFW aktiv, iptables NAT (öffentlich 22/23 → Cowrie 2223/2224).
+- setup_cowrie.sh ausgeführt: Cowrie als User cowrie im eigenen venv, JSON Logging, Fake Hostname srv-prod-01.
+- systemd Service honeypot cowrie läuft und startet automatisch beim Boot.
+- Erster Angriff bestätigt —> eigener SSH-Test und bereits echte Bots aus dem Internet.
 
-Live-Log (`cowrie.json`) mit echten Verbindungen:
+Live-Log (cowrie.json) mit echten Verbindungen:
 
 ![Cowrie Live-Log](docs/screenshots/week1-cowrie-live-log.png)
 
-Eigener SSH-Test — gelandet in der Cowrie-Fake-Shell `root@srv-prod-01`:
+Eigener SSH-Test —> gelandet in der Cowrie-Fake-Shell root@srv-prod-01:
 
 ![SSH-Test gegen den Honeypot](docs/screenshots/week1-attack-test.png)
 
 **Woran man sieht, dass nicht nur ich angegriffen habe:**
-- Meine eigene IP ist `194.209.11.12` — das ist mein SSH-Test (Protokoll `ssh` auf Port 2223, endet mit `cowrie.login.success` für `root/admin1233`).
-- Die IPs `128.199.8.54` und `213.5.70.12` habe ich **nicht** ausgelöst — das sind fremde Bots, die von selbst auf den **Telnet-Port 2224** verbunden haben (`"protocol":"telnet"`, mehrere `cowrie.session.connect`). `128.199.8.54` gehört zu DigitalOcean — typische Scanner-Infrastruktur.
-- Faustregel fürs Log: jede `src_ip`, die nicht `194.209.11.12` ist, ist ein fremder Angreifer. Schon in den ersten ~3 Minuten mehrere fremde Sessions.
+- Meine eigene IP ist 194.209.11.12, das ist mein SSH-Test (Protokoll ssh auf Port 2223 endet mit cowrie.login.success für root/admin1233).
+- Die IPs 128.199.8.54 und 213.5.70.12 habe ich nicht ausgelöst, das sind fremde Bots die von selbst auf den Telnett Port 2224 verbunden haben ("protocol":"telnet", mehrere cowrie.session.connect). 128.199.8.54 gehört zu DigitalOcean — typische Scanner-Infrastruktur.
+- Faustregel fürs Log: jede src_ip, die nicht 194.209.11.12 ist, ist ein fremder Angreifer. Schon in den ersten paar Minuten mehrere fremde Sessions.
 
 #### Probleme & Notizen
 - Hetzner → Kamatera gewechselt um den 30-Tage-Gratis-Trial zu nutzen.
@@ -98,31 +99,30 @@ Eigener SSH-Test — gelandet in der Cowrie-Fake-Shell `root@srv-prod-01`:
 ### Week 2 — Log Parser & Database Pipeline
  
 **Period:** `15.06.2026`  
-**Status:** 🟡 Code fertig & getestet — Deployment auf Server offen
+**Status:** Code fertig & getestet, das Deployment ist auf dem Server offen
  
-#### Planned
-- [ ] SQLite Schema erstellen (`attacks` + `ip_cache` Tabellen, Indizes)
-- [ ] `parser/log_parser.py` schreiben — Cowrie JSON → DB
-- [ ] `parser/geoip.py` — ip-api.com Integration mit Cache
-- [ ] Deduplizierung: Parser merkt sich letzten verarbeiteten Log-Offset
-- [ ] Cron-Job einrichten: alle 5 Minuten
-- [ ] DB mit echten Daten bestätigen (`SELECT COUNT(*) FROM attacks`)
-#### Actually done
-- DB-Helfer in `parser/db.py` ergänzt: `insert_attack`, `get_offset`/`set_offset` (Dedup über Byte-Offset), `cache_get`/`cache_set`.
-- `parser/geoip.py` — GeoIP über ip-api.com, immer erst `ip_cache` prüfen, auf 45 req/min gedrosselt.
-- `parser/log_parser.py` — liest `cowrie.json` ab gespeichertem Offset, filtert relevante Events, reichert mit GeoIP an, schreibt parametrisiert in SQLite.
+#### Geplant
+- SQLite Schema erstellen (attacks + ip_cache Tabellen, Indizes)
+- parser/log_parser.py schreiben — Cowrie JSON → DB
+- parser/geoip.py, ip-api.com Integration mit Cache
+- Deduplizierung: Parser merkt sich letzten verarbeiteten Log-Offset
+- Cron-Job einrichten: alle 5 Minuten
+- DB mit echten Daten bestätigen (`SELECT COUNT(*) FROM attacks`)
+#### Erledigt
+- DB Helfer in parser/db.py ergänzt: insert_attack, get_offset / set_offset cache_get/cache_set.
+- parser/geoip.py -> GeoIP über ip-api.com immer erst ip_cache prüfen, auf 45 req pro min herunter geschalten.
+- parser/log_parser.py — liest cowrie.json ab gespeichertem Offset, filtert relevante Events, reichert mit GeoIP an, schreibt parametrisiert in SQLite.
 - Tests: 11 grün (5 DB + 6 neue für Parser & GeoIP), laufen gegen das Fixture mit RFC-5737-IPs.
-- 8 Commits, alle gepusht.
-- **Offen für nächste Session:** Parser auf dem Server ausrollen (venv + `.env` + systemd-Timer alle 5 Min) und DB mit echten Daten bestätigen.
-#### Problems & notes
-- Cron durch systemd-Timer ersetzt (`honeypot-parser.timer`, alle 5 Min) — sauberer als Crontab.
-- Parser-Code ist fertig & getestet; das Live-Schalten auf dem Server kommt nächste Session.
+- Offen für nächste Session: Parser auf dem Server ausrollen (venv + .env + systemd-Timer alle 5 Min) und DB mit echten Daten bestätigen.
+#### Probleme & Notizen
+- Cron durch systemd Timer ersetzt (honeypot-parser.timer, alle 5 Min) so ist est sauberer als Crontab.
+- Parser code ist fertig & getestet. Das Live Schalten auf dem Server kommt in der nächsten Session.
 ---
  
 ### Week 3 — Flask REST API
  
 **Period:** `DD.MM.YYYY – DD.MM.YYYY`  
-**Status:** ⬜ Not started
+**Status:**  Nicht angefangen
  
 #### Planned
 - [ ] Flask App Factory in `api/app.py`
@@ -146,7 +146,7 @@ Eigener SSH-Test — gelandet in der Cowrie-Fake-Shell `root@srv-prod-01`:
 ### Week 4 — Dashboard Frontend
  
 **Period:** `DD.MM.YYYY – DD.MM.YYYY`  
-**Status:** ⬜ Not started
+**Status:**  Nicht angefangen
  
 #### Planned
 - [ ] Leaflet.js Weltkarte mit CartoDB Dark Theme
@@ -170,7 +170,7 @@ Eigener SSH-Test — gelandet in der Cowrie-Fake-Shell `root@srv-prod-01`:
 ### Week 5 — Analysis & Advanced Features
  
 **Period:** `DD.MM.YYYY – DD.MM.YYYY`  
-**Status:** ⬜ Not started
+**Status:**  Nicht angefangen
  
 #### Planned
 - [ ] `analysis/hibp_check.py` — k-Anonymity SHA1-Prefix Check
@@ -192,7 +192,7 @@ Eigener SSH-Test — gelandet in der Cowrie-Fake-Shell `root@srv-prod-01`:
 ### Week 6 — HTTPS, Hardening & Documentation
  
 **Period:** `DD.MM.YYYY – DD.MM.YYYY`  
-**Status:** ⬜ Not started
+**Status:**  Nicht angefangen
  
 #### Planned
 - [ ] nginx Reverse Proxy vor Flask
