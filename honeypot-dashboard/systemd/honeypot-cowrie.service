@@ -10,8 +10,8 @@ Group=cowrie
 WorkingDirectory=/opt/honeypot/cowrie
 Environment=VIRTUAL_ENV=/opt/honeypot/cowrie/cowrie-env
 Environment=PATH=/opt/honeypot/cowrie/cowrie-env/bin:/usr/bin:/bin
-ExecStart=/opt/honeypot/cowrie/bin/cowrie start
-ExecStop=/opt/honeypot/cowrie/bin/cowrie stop
+ExecStart=/opt/honeypot/cowrie/cowrie-env/bin/cowrie start
+ExecStop=/opt/honeypot/cowrie/cowrie-env/bin/cowrie stop
 PIDFile=/opt/honeypot/cowrie/var/run/cowrie.pid
 Restart=on-failure
 RestartSec=10
