@@ -5,7 +5,7 @@
 **Server:** Kamatera · Ubuntu 22.04 · 1 vCPU / 2 GB / 30 GB · Frankfurt  
 **Kosten:** Kamatera 30-day free trial (hourly billing; delete server before trial ends)
 
-## Architecture
+## Architektur
  
 ```
 Internet (echte Angreifer)
@@ -60,7 +60,8 @@ Internet (echte Angreifer)
 - iptables NAT: Port 22 -> Cowrie Port 2222 -> *Skript fertig, noch nicht ausgeführt*
 - Ersten Log-Eintrag in `cowrie.json` bestätigen —> *offen*
 #### Erledigt
-- Kamatera VPS bestellt & läuft: Frankfurt, Ubuntu 22.04, Type B, 1 vCPU / 2 GB RAM / 30 GB SSD, öffentliche WAN-IP.
+- Kamatera VPS bestellt & läuft: Frankfurt, Ubuntu 22.04, Type B, 1 vCPU / 2 GB RAM / 30 GB SSD, öffentliche WAN-IP. <img width="2500" height="548" alt="image" src="https://github.com/user-attachments/assets/57a92b28-a10d-4243-a96b-57c165949ff4" />
+
 - SSH-Key erstellt: auf dem Mac.
 - Kompletter Week-1-Code geschrieben: (lokal, noch nicht auf dem Server ausgeführt):
   - parser/db.py -> DB-Schema + Testss
