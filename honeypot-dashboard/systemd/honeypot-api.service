@@ -3,8 +3,7 @@ Description=Honeypot dashboard Flask API
 After=network-online.target
 Wants=network-online.target
 
-# NOTE: Week 3 deliverable. Unit is scaffolded now; api/app.py is implemented
-# later. Bind to localhost only — nginx (Week 6) terminates TLS and proxies in.
+# Week 3 deliverable, scaffolded for now. Localhost-only (nginx proxies later).
 [Service]
 Type=simple
 User=cowrie

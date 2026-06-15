@@ -1,8 +1,4 @@
-"""Read new lines from cowrie.json, enrich with GeoIP, store in SQLite.
-
-Resumes from the byte offset saved in parser_state so re-runs don't double-insert.
-Run with `python3 -m parser.log_parser` (systemd timer every 5 min).
-"""
+"""Read new cowrie.json lines, enrich via GeoIP, store in SQLite."""
 
 import json
 import os

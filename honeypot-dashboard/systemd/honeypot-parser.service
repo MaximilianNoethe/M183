@@ -3,8 +3,6 @@ Description=Honeypot log parser (cowrie.json -> SQLite + GeoIP)
 After=network-online.target honeypot-cowrie.service
 Wants=network-online.target
 
-# Type=oneshot: the parser runs to completion and exits. It is triggered
-# periodically by honeypot-parser.timer (every 5 minutes), not kept resident.
 [Service]
 Type=oneshot
 User=cowrie

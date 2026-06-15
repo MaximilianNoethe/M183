@@ -1,15 +1,6 @@
 #!/usr/bin/env bash
-#
-# setup_cowrie.sh — Week 1 Cowrie honeypot install + config.
-#
-# Run as root AFTER setup_server.sh, on the VPS. Installs Cowrie under a
-# dedicated unprivileged user, into a Python venv, with JSON logging enabled
-# and SSH/Telnet listeners on the unprivileged ports that the iptables NAT
-# (from setup_server.sh) redirects public 22/23 to.
-#
-# Cowrie listens on:  SSH 2223, Telnet 2224   (public 22/23 -> these via NAT)
-#
-# Usage:  sudo bash setup_cowrie.sh
+# Install + configure Cowrie (own user + venv, JSON logging, SSH 2223 / Telnet 2224).
+# Run as root after setup_server.sh.
 
 set -euo pipefail
 
@@ -35,8 +26,7 @@ create_user() {
     else
         log "User '${COWRIE_USER}' already exists."
     fi
-    # Create the install dir itself and hand it to cowrie. (chown -R on the
-    # parent doesn't follow the /opt/honeypot symlink, so target it directly.)
+    # chown -R doesn't follow the /opt/honeypot symlink, so target the dir directly
     mkdir -p "${COWRIE_HOME}"
     chown -R "${COWRIE_USER}:${COWRIE_USER}" "${COWRIE_HOME}"
 }
@@ -90,7 +80,6 @@ EOF
 }
 
 install_service() {
-    # Installs the systemd unit shipped in this repo (copied to the box).
     log "Installing systemd service for Cowrie..."
     if [[ -f /opt/honeypot/systemd/honeypot-cowrie.service ]]; then
         cp /opt/honeypot/systemd/honeypot-cowrie.service /etc/systemd/system/
