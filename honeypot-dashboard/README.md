@@ -1,4 +1,4 @@
-# 🍯 Honeypot + Live Attack Map
+# Honeypot + Live Attack Map
  
  
 **Stack:** Python · Flask · Cowrie · SQLite · Leaflet.js · Chart.js  
@@ -31,7 +31,7 @@ Internet (echte Angreifer)
  
 | Week | Topic | Status |
 |------|-------|--------|
-| 1 | VPS · Cowrie · Firewall | 🟡 In progress |
+| 1 | VPS · Cowrie · Firewall | In progress |
 | 2 | Log Parser · SQLite · GeoIP | ⬜ Not started |
 | 3 | Flask API · Auth · Security Headers | ⬜ Not started |
 | 4 | Dashboard · World Map · Charts | ⬜ Not started |
