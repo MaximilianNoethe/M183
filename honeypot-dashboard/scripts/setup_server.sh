@@ -86,6 +86,10 @@ configure_firewall() {
     ufw default allow outgoing
     ufw allow 22/tcp    comment 'Cowrie SSH honeypot'
     ufw allow 23/tcp    comment 'Cowrie Telnet honeypot'
+    # NAT rewrites 22->2223 / 23->2224 before the filter stage, so UFW must
+    # allow the redirected target ports too, otherwise the packets get dropped.
+    ufw allow 2223/tcp  comment 'Cowrie SSH (NAT target)'
+    ufw allow 2224/tcp  comment 'Cowrie Telnet (NAT target)'
     ufw allow "${REAL_SSH_PORT}/tcp" comment 'Real admin SSH'
     ufw allow "${DASHBOARD_PORT}/tcp" comment 'Dashboard (pre-HTTPS)'
     ufw --force enable
