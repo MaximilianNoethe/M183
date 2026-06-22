@@ -1,0 +1,10 @@
+[tool.ruff]
+line-length = 100
+extend-exclude = ["cowrie", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]  # long SQL strings are fine
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

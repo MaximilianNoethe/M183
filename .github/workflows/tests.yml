@@ -1,0 +1,26 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+    paths: ["honeypot-dashboard/**"]
+  pull_request:
+    paths: ["honeypot-dashboard/**"]
+
+defaults:
+  run:
+    working-directory: honeypot-dashboard
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt ruff
+      - name: Lint
+        run: ruff check parser api analysis tests
+      - name: Tests
+        run: pytest -q

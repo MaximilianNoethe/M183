@@ -1,6 +1,7 @@
 # Honeypot + Live Attack Map
- 
- 
+
+[![tests](https://github.com/MaximilianNoethe/M183/actions/workflows/tests.yml/badge.svg)](https://github.com/MaximilianNoethe/M183/actions/workflows/tests.yml)
+
 **Stack:** Python · Flask · Cowrie · SQLite · Leaflet.js · Chart.js  
 **Server:** Kamatera · Ubuntu 22.04 · 1 vCPU / 2 GB / 30 GB · Frankfurt  
 **Kosten:** Kamatera 30-day free trial (hourly billing; delete server before trial ends)
