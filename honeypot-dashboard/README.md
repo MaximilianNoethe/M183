@@ -47,8 +47,7 @@ Internet (echte Angreifer)
 ## Lokal starten (Quickstart)
 
 > Voraussetzungen: Python 3.11+ und git. Der Honeypot-Sensor selbst läuft auf dem
-> Server — lokal nimmst du die Pipeline (Parser + Tests, ab Woche 3/4 auch API +
-> Dashboard) in Betrieb.
+> Server — lokal nimmst du die ganze Pipeline (Parser, API und Dashboard) in Betrieb.
 
 ```bash
 git clone https://github.com/MaximilianNoethe/M183.git
@@ -64,7 +63,7 @@ cp .env.example .env          # Werte anpassen: DASHBOARD_USER/PASSWORD, SECRET_
 **Tests laufen lassen** — beweist, dass Parser + GeoIP lokal funktionieren:
 
 ```bash
-pytest tests/ -v              # 11 Tests gegen tests/fixtures/sample_cowrie.json
+pytest tests/ -v              # 28 Tests (Parser, API, Analyse)
 ```
 
 **Parser lokal ausprobieren** — schreibt die 20 Beispiel-Events des Fixtures in eine
@@ -76,11 +75,18 @@ COWRIE_LOG_PATH=tests/fixtures/sample_cowrie.json DATABASE_PATH=local.db \
 sqlite3 local.db "SELECT COUNT(*) FROM attacks;"
 ```
 
-**API + Dashboard** (ab Woche 3/4):
+**Dashboard lokal ansehen** — API gegen die eben gefüllte `local.db` starten:
 
 ```bash
-python3 -m api.app            # startet Flask auf http://localhost:8080
+DATABASE_PATH=local.db python3 -m api.app    # Flask auf http://localhost:8080
 ```
+
+Dann `http://localhost:8080` im Browser öffnen und mit `DASHBOARD_USER` /
+`DASHBOARD_PASSWORD` aus deiner `.env` einloggen (Default: `admin` / `changeme`).
+Sichtbar: Statistik-Karten, Charts (Top-Passwörter, Angriffe/Stunde), Live-Feed,
+der Analyse-Bereich (Befehle, HIBP, Botnet, Provider) und die Suche. Die **Weltkarte**
+bleibt mit den Test-IPs leer (RFC-5737-Adressen haben keine Geo-Position) — auf dem
+Server zeigt sie die echten Angriffe.
 
 Auf dem Server läuft der Parser nicht manuell, sondern automatisch via systemd-Timer
 gegen die echten Cowrie-Logs (alle 5 Min).
