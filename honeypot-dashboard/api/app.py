@@ -1,14 +1,33 @@
-"""Week 3: Flask app factory. Registers blueprints, auth, middleware.
+"""Flask app factory: dashboard page + JSON API."""
 
-Run with `python3 -m api.app` (binds 127.0.0.1:8080). STUB — Week 3.
-"""
+import os
 
-from __future__ import annotations
+from dotenv import load_dotenv
+from flask import Flask, render_template
+
+from api.middleware import register_middleware
+from api.routes.attacks import bp as attacks_bp
+from api.routes.stats import bp as stats_bp
+
+load_dotenv()
 
 
 def create_app():
-    """Build and configure the Flask application."""
-    raise NotImplementedError("Week 3: Flask app factory not implemented yet.")
+    app = Flask(
+        __name__,
+        template_folder="../frontend/templates",
+        static_folder="../frontend/static",
+    )
+    app.secret_key = os.getenv("SECRET_KEY", "dev")
+    register_middleware(app)
+    app.register_blueprint(attacks_bp)
+    app.register_blueprint(stats_bp)
+
+    @app.route("/")
+    def index():
+        return render_template("dashboard.html")
+
+    return app
 
 
 if __name__ == "__main__":
