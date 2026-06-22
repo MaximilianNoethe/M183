@@ -68,7 +68,16 @@
   </section>
 
   <section class="panel feedwrap">
-    <h2>Live-Feed — letzte Angriffe</h2>
+    <div class="feedhead">
+      <h2 id="feed-title">Live-Feed — letzte Angriffe</h2>
+      <form id="search" class="search">
+        <input type="text" id="q-ip" placeholder="IP">
+        <input type="text" id="q-country" placeholder="Land">
+        <input type="text" id="q-user" placeholder="User">
+        <button type="submit">Suchen</button>
+        <button type="button" id="q-reset">Live</button>
+      </form>
+    </div>
     <table id="feed">
       <thead><tr><th>Zeit</th><th>IP</th><th>Land</th><th>User</th><th>Passwort</th><th>Event</th></tr></thead>
       <tbody></tbody>
@@ -81,6 +90,7 @@
   <script src="/static/js/charts.js"></script>
   <script src="/static/js/feed.js"></script>
   <script src="/static/js/analysis.js"></script>
+  <script src="/static/js/search.js"></script>
   <script src="/static/js/app.js"></script>
 </body>
 </html>

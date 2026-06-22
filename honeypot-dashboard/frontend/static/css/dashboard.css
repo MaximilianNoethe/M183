@@ -94,6 +94,30 @@ body {
 }
 
 .feedwrap { margin: 0 20px 30px; }
+.feedhead { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.search { display: flex; gap: 8px; flex-wrap: wrap; }
+.search input {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--fg);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  width: 110px;
+}
+.search button {
+  background: var(--fg);
+  color: var(--bg);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+}
+.search button#q-reset { background: var(--line); color: var(--fg); }
 
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }

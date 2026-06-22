@@ -20,7 +20,7 @@
       document.getElementById("stat-countries").textContent = stats.countries;
       HoneypotCharts.update(stats);
       HoneypotMap.update(attacks);
-      HoneypotFeed.update(recent);
+      if (!HoneypotSearch.isActive()) HoneypotFeed.update(recent);
       HoneypotAnalysis.update().catch(function () {});
       statusEl.textContent = "aktualisiert " + new Date().toLocaleTimeString();
       statusEl.classList.remove("err");
@@ -32,6 +32,7 @@
 
   HoneypotMap.init();
   HoneypotCharts.init();
+  HoneypotSearch.init();
   refresh();
   setInterval(refresh, 30000);
 })();
