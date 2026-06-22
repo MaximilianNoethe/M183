@@ -21,6 +21,7 @@
       HoneypotCharts.update(stats);
       HoneypotMap.update(attacks);
       HoneypotFeed.update(recent);
+      HoneypotAnalysis.update().catch(function () {});
       statusEl.textContent = "aktualisiert " + new Date().toLocaleTimeString();
       statusEl.classList.remove("err");
     } catch (e) {

@@ -24,8 +24,18 @@ body {
 }
 
 .topbar h1 { font-size: 18px; margin: 0; letter-spacing: 1px; }
+.topright { display: flex; align-items: center; gap: 16px; }
 .status { font-size: 12px; color: var(--dim); }
 .status.err { color: #ff5f56; }
+.csvbtn {
+  font-size: 12px;
+  color: var(--bg);
+  background: var(--fg);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: bold;
+}
 
 .stats {
   display: grid;
@@ -76,6 +86,13 @@ body {
   letter-spacing: 1px;
 }
 
+.analysis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  padding: 0 20px 18px;
+}
+
 .feedwrap { margin: 0 20px 30px; }
 
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -86,5 +103,5 @@ td { color: #cfffe0; }
 .leaflet-popup-content .popup strong { color: #0a0a0a; }
 
 @media (max-width: 760px) {
-  .stats, .charts { grid-template-columns: 1fr; }
+  .stats, .charts, .analysis { grid-template-columns: 1fr; }
 }

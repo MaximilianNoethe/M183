@@ -10,7 +10,10 @@
 <body>
   <header class="topbar">
     <h1>🍯 HONEYPOT // LIVE ATTACK MAP</h1>
-    <span id="status" class="status">verbinde…</span>
+    <div class="topright">
+      <a class="csvbtn" href="/api/export/csv">⬇ CSV-Export</a>
+      <span id="status" class="status">verbinde…</span>
+    </div>
   </header>
 
   <section class="stats">
@@ -26,6 +29,30 @@
     <div class="panel"><h2>Angriffe pro Stunde</h2><canvas id="chart-hourly"></canvas></div>
   </section>
 
+  <section class="analysis">
+    <div class="panel">
+      <h2>Top Befehle der Angreifer</h2>
+      <table id="cmd-table">
+        <thead><tr><th>Befehl</th><th>Anzahl</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>Passwörter in Daten-Leaks (HIBP)</h2>
+      <table id="hibp-table">
+        <thead><tr><th>Passwort</th><th>Versuche</th><th>In Leaks</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>Botnet-Wellen (≥5 IPs / Minute)</h2>
+      <table id="botnet-table">
+        <thead><tr><th>Zeitfenster</th><th>IPs</th><th>Versuche</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
   <section class="panel feedwrap">
     <h2>Live-Feed — letzte Angriffe</h2>
     <table id="feed">
@@ -39,6 +66,7 @@
   <script src="/static/js/map.js"></script>
   <script src="/static/js/charts.js"></script>
   <script src="/static/js/feed.js"></script>
+  <script src="/static/js/analysis.js"></script>
   <script src="/static/js/app.js"></script>
 </body>
 </html>
