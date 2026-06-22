@@ -22,17 +22,21 @@ def _lookup(ip):
     try:
         data = requests.get(ENDPOINT + ip, timeout=5).json()
     except requests.RequestException:
-        return (None, None, None, None)
+        return (None, None, None, None, None, None)
     if data.get("status") != "success":
-        return (None, None, None, None)
-    return (data.get("country"), data.get("city"), data.get("lat"), data.get("lon"))
+        return (None, None, None, None, None, None)
+    return (data.get("country"), data.get("city"), data.get("lat"), data.get("lon"),
+            data.get("as"), data.get("org"))
 
 
 def get_geo(ip, conn):
     cached = db.cache_get(conn, ip)
     if cached:
-        return (cached["country"], cached["city"], cached["latitude"], cached["longitude"])
-    country, city, lat, lon = _lookup(ip)
+        return {"country": cached["country"], "city": cached["city"],
+                "latitude": cached["latitude"], "longitude": cached["longitude"],
+                "asn": cached["asn"], "org": cached["org"]}
+    country, city, lat, lon, asn, org = _lookup(ip)
     now = datetime.now(timezone.utc).isoformat()
-    db.cache_set(conn, ip, country, city, lat, lon, now)
-    return (country, city, lat, lon)
+    db.cache_set(conn, ip, country, city, lat, lon, now, asn=asn, org=org)
+    return {"country": country, "city": city, "latitude": lat, "longitude": lon,
+            "asn": asn, "org": org}

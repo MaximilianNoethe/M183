@@ -1,5 +1,6 @@
 """Read new cowrie.json lines, enrich via GeoIP, store in SQLite."""
 
+import glob
 import json
 import os
 from datetime import datetime, timezone
@@ -11,11 +12,18 @@ TRACKED = {
     "cowrie.login.success",
     "cowrie.command.input",
     "cowrie.session.connect",
+    "cowrie.session.file_download",
 }
 
 
 def _log_path():
     return os.getenv("COWRIE_LOG_PATH", "/opt/honeypot/cowrie/var/log/cowrie/cowrie.json")
+
+
+def _log_files():
+    # current log plus daily-rotated files (cowrie.json.2026-06-21 …), oldest first
+    main = _log_path()
+    return sorted(glob.glob(main + ".*")) + [main]
 
 
 def run(log_path=None, db_path=None):
@@ -43,7 +51,7 @@ def run(log_path=None, db_path=None):
                 ip = event.get("src_ip")
                 if not ip:
                     continue
-                country, city, lat, lon = geoip.get_geo(ip, conn)
+                geo = geoip.get_geo(ip, conn)
                 db.insert_attack(
                     conn,
                     timestamp=event.get("timestamp"),
@@ -51,11 +59,13 @@ def run(log_path=None, db_path=None):
                     event_type=event.get("eventid"),
                     username=event.get("username"),
                     password=event.get("password"),
-                    raw_command=event.get("input"),
-                    country=country,
-                    city=city,
-                    latitude=lat,
-                    longitude=lon,
+                    raw_command=event.get("input") or event.get("url"),
+                    country=geo["country"],
+                    city=geo["city"],
+                    latitude=geo["latitude"],
+                    longitude=geo["longitude"],
+                    asn=geo["asn"],
+                    org=geo["org"],
                 )
                 inserted += 1
             new_offset = fh.tell()
@@ -66,5 +76,9 @@ def run(log_path=None, db_path=None):
     return inserted
 
 
+def run_all(db_path=None):
+    return sum(run(log_path=path, db_path=db_path) for path in _log_files())
+
+
 if __name__ == "__main__":
-    print(f"Inserted {run()} new attack rows.")
+    print(f"Inserted {run_all()} new attack rows.")
