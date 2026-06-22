@@ -1,6 +1,44 @@
 <!doctype html>
-<!-- Week 4: single-page dashboard. Leaflet + Chart.js via CDN. STUB. -->
-<html lang="en">
-<head><meta charset="utf-8"><title>Honeypot Dashboard</title></head>
-<body><!-- Week 4 --></body>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Honeypot // Live Attack Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>🍯 HONEYPOT // LIVE ATTACK MAP</h1>
+    <span id="status" class="status">verbinde…</span>
+  </header>
+
+  <section class="stats">
+    <div class="card"><div class="num" id="stat-total">–</div><div class="label">Angriffe total</div></div>
+    <div class="card"><div class="num" id="stat-ips">–</div><div class="label">Unique IPs</div></div>
+    <div class="card"><div class="num" id="stat-countries">–</div><div class="label">Länder</div></div>
+  </section>
+
+  <section class="mapwrap"><div id="map"></div></section>
+
+  <section class="charts">
+    <div class="panel"><h2>Top Passwörter</h2><canvas id="chart-passwords"></canvas></div>
+    <div class="panel"><h2>Angriffe pro Stunde</h2><canvas id="chart-hourly"></canvas></div>
+  </section>
+
+  <section class="panel feedwrap">
+    <h2>Live-Feed — letzte Angriffe</h2>
+    <table id="feed">
+      <thead><tr><th>Zeit</th><th>IP</th><th>Land</th><th>User</th><th>Passwort</th><th>Event</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="/static/js/map.js"></script>
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/feed.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
 </html>

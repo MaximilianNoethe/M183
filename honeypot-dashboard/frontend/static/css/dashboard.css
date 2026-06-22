@@ -1,1 +1,90 @@
-/* Week 4: terminal aesthetic — #0a0a0a bg, #00ff41 text, monospace. STUB. */
+:root {
+  --bg: #0a0a0a;
+  --fg: #00ff41;
+  --dim: #5fffa0;
+  --panel: #0f160f;
+  --line: #163a22;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar h1 { font-size: 18px; margin: 0; letter-spacing: 1px; }
+.status { font-size: 12px; color: var(--dim); }
+.status.err { color: #ff5f56; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+}
+
+.card .num { font-size: 34px; font-weight: bold; }
+.card .label {
+  font-size: 12px;
+  color: var(--dim);
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.mapwrap { padding: 0 20px; }
+#map { height: 440px; border: 1px solid var(--line); border-radius: 8px; }
+
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.panel h2 {
+  font-size: 13px;
+  margin: 0 0 12px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.feedwrap { margin: 0 20px 30px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+th { color: var(--dim); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
+td { color: #cfffe0; }
+
+.leaflet-popup-content .popup strong { color: #0a0a0a; }
+
+@media (max-width: 760px) {
+  .stats, .charts { grid-template-columns: 1fr; }
+}
