@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, render_template
 
+from api.auth import requires_auth
 from api.middleware import register_middleware
 from api.routes.attacks import bp as attacks_bp
 from api.routes.stats import bp as stats_bp
@@ -24,6 +25,7 @@ def create_app():
     app.register_blueprint(stats_bp)
 
     @app.route("/")
+    @requires_auth
     def index():
         return render_template("dashboard.html")
 
