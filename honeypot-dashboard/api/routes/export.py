@@ -11,7 +11,7 @@ from parser import db
 bp = Blueprint("export", __name__)
 
 COLUMNS = ["timestamp", "src_ip", "country", "city", "latitude", "longitude",
-           "username", "password", "event_type", "raw_command"]
+           "asn", "org", "username", "password", "event_type", "raw_command"]
 
 
 @bp.route("/api/export/csv")

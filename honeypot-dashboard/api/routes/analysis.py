@@ -59,3 +59,37 @@ def commands():
     finally:
         conn.close()
     return jsonify([dict(r) for r in rows])
+
+
+@bp.route("/api/analysis/downloads")
+@requires_auth
+def downloads():
+    conn = db.get_connection()
+    try:
+        rows = conn.execute(
+            """SELECT raw_command AS value, COUNT(*) AS count FROM attacks
+               WHERE raw_command IS NOT NULL AND raw_command != ''
+                 AND (raw_command LIKE '%wget%' OR raw_command LIKE '%curl%'
+                      OR raw_command LIKE '%http%'
+                      OR event_type = 'cowrie.session.file_download')
+               GROUP BY raw_command ORDER BY count DESC LIMIT 15"""
+        ).fetchall()
+    finally:
+        conn.close()
+    return jsonify([dict(r) for r in rows])
+
+
+@bp.route("/api/analysis/providers")
+@requires_auth
+def providers():
+    conn = db.get_connection()
+    try:
+        rows = conn.execute(
+            """SELECT asn AS value, COUNT(*) AS count,
+                      COUNT(DISTINCT src_ip) AS ips FROM attacks
+               WHERE asn IS NOT NULL AND asn != ''
+               GROUP BY asn ORDER BY count DESC LIMIT 10"""
+        ).fetchall()
+    finally:
+        conn.close()
+    return jsonify([dict(r) for r in rows])
