@@ -35,7 +35,7 @@ Internet (echte Angreifer)
 | 2 | Log Parser · SQLite · GeoIP | Deployed —> Parser läuft live auf dem Server |
 | 3 | Flask API · Auth · Security Headers | Fertig —> 18 Tests grün, deployed |
 | 4 | Dashboard · World Map · Charts | Fertig —> Live mit echten Angriffen |
-| 5 | Analysis · HIBP · Botnet Detection | Nicht angefangen |
+| 5 | Analysis · HIBP · Botnet Detection | Fertig —> RESEARCH.md mit echten Funden |
 | 6 | HTTPS · Hardening · Documentation | Nicht angefangen |
   
 ---
@@ -237,24 +237,31 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
  
 ### Week 5 — Analysis & Advanced Features
  
-**Period:** `DD.MM.YYYY – DD.MM.YYYY`  
-**Status:**  Nicht angefangen
+**Period:** `22.06.2026`  
+**Status:** Fertig —> Analyse-Features live, `RESEARCH.md` mit echten Funden
  
-#### Planned
-- [ ] `analysis/hibp_check.py` — k-Anonymity SHA1-Prefix Check
-- [ ] `analysis/botnet_detector.py` — koordinierte Angriffe erkennen
-- [ ] `GET /api/analysis/passwords` — Top Passwörter + HIBP Treffer
-- [ ] `GET /api/analysis/botnet` — verdächtige Angriffswellen
-- [ ] `GET /api/export/csv` — Auth-geschützter Daten-Export
-- [ ] Analysis-Tab im Dashboard
-#### Actually done
-> *(Fill in after the session)*
- 
--
-#### Problems & notes
-> *(Anything unexpected, links, commands that helped)*
- 
--
+#### Geplant
+- [x] `analysis/hibp_check.py` — k-Anonymity SHA1-Prefix Check
+- [x] `analysis/botnet_detector.py` — koordinierte Angriffe erkennen
+- [x] `GET /api/analysis/passwords` — Top Passwörter + HIBP Treffer
+- [x] `GET /api/analysis/botnet` — verdächtige Angriffswellen
+- [x] `GET /api/export/csv` — Auth-geschützter Daten-Export
+- [x] Analyse-Bereich im Dashboard (statt Tab)
+#### Erledigt
+- `hibp_check.py` — HaveIBeenPwned über k-Anonymity (nur 5 SHA1-Zeichen verlassen den Server).
+- `botnet_detector.py` — findet Minuten mit ≥5 verschiedenen IPs (koordinierte Wellen).
+- API: `/api/analysis/passwords` (Top-PW + Leak-Treffer), `/api/analysis/botnet`, `/api/analysis/commands` (Top-Befehle der Angreifer), `/api/export/csv`.
+- Dashboard: neuer Analyse-Bereich (Top-Befehle, HIBP-Leak-Treffer, Botnet-Wellen) + CSV-Export-Button.
+- 6 neue Tests (insgesamt **24 grün**), auf dem Server deployed.
+- **`RESEARCH.md` geschrieben** mit echten Zahlen + Interpretation (12'165 Angriffe, 102 IPs, 30 Länder).
+#### Erkenntnisse (Highlights, Details in `RESEARCH.md`)
+- **100 % der Top-Passwörter** stehen in HIBP — `123456` allein in **210 Mio** Leaks. Die Bots fahren reine Leak-Listen ab.
+- Häufigster Befehl: `uname -s -v -n -r -m` (3'262×) → OS-Fingerprinting, um das passende Malware-Binary zu wählen.
+- Recon-Skripte prüfen RAM/CPU/GPU (`nvidia`) → Eignung fürs **Krypto-Mining**; dazu `sudo -S` mit Leak-Passwörtern (Privilege Escalation).
+- `login.success` >> `login.failed` ist ein **Cowrie-Artefakt** (freizügige Fake-Auth), kein erratenes Passwort.
+#### Probleme & Notizen
+- Datenfenster ist ein Log-Tag (~16,5 h), weil Cowrie die JSON-Logs täglich rotiert und der Parser nur `cowrie.json` liest → mögliche Erweiterung: rotierte Logs mitlesen.
+- HIBP-Treffer werden serverseitig gecacht, damit das Dashboard nicht bei jedem Refresh erneut abfragt.
 ---
  
 ### Week 6 — HTTPS, Hardening & Documentation
@@ -282,17 +289,19 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 ---
  
 ## Research Findings
- 
-> *(Filled in during Week 6 — real data from the honeypot)*
- 
+
+> Echte Daten vom Honeypot. Volle Auswertung + Interpretation in **[`RESEARCH.md`](RESEARCH.md)**.
+> Snapshot: 22.06.2026, 00:01–16:36 UTC (~16,5 h Log-Tag).
+
 | Metric | Value |
 |--------|-------|
-| Time to first attack after deployment | — |
-| Total attacks collected | — |
-| Unique attacker IPs | — |
-| Countries represented | — |
-| Most attacked username | — |
-| Most tried password | — |
-| Longest single botnet wave | — |
-| Password found in HIBP (top hit) | — |
+| Angriffs-Events total | 12'165 |
+| Unique attacker IPs | 102 |
+| Countries represented | 30 |
+| Events pro Stunde (Schnitt) | ~737 |
+| Häufigster Username | `root` (661×) |
+| Häufigstes Passwort | `123456` (287×) |
+| `123456` in HIBP-Leaks | 210'318'957 |
+| Top-Passwörter in HIBP | 100 % |
+| Häufigster Angreifer-Befehl | `uname -s -v -n -r -m` (3'262×) |
  
