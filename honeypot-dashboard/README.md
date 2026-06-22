@@ -33,8 +33,8 @@ Internet (echte Angreifer)
 |------|-------|--------|
 | 1 | VPS · Cowrie · Firewall | Fertig —> Honeypot live |
 | 2 | Log Parser · SQLite · GeoIP | Deployed —> Parser läuft live auf dem Server |
-| 3 | Flask API · Auth · Security Headers | Nicht angefangen |
-| 4 | Dashboard · World Map · Charts | Nicht angefangen |
+| 3 | Flask API · Auth · Security Headers | Fertig —> 18 Tests grün, deployed |
+| 4 | Dashboard · World Map · Charts | Fertig —> Live mit echten Angriffen |
 | 5 | Analysis · HIBP · Botnet Detection | Nicht angefangen |
 | 6 | HTTPS · Hardening · Documentation | Nicht angefangen |
   
@@ -162,7 +162,10 @@ Eigener SSH-Test —> gelandet in der Cowrie-Fake-Shell root@srv-prod-01:
 - Eigenes Projekt-venv `/opt/honeypot/.venv` + requirements installiert (getrennt von Cowries venv).
 - `.env` gesetzt (DATABASE_PATH, COWRIE_LOG_PATH, Dashboard-Login), Rechte 640 root:cowrie.
 - Erster echter Parser-Lauf: 88 unterschiedliche Angreifer-IPs im Log, GeoIP-Anreicherung läuft, Angriffe landen in SQLite.
-- Noch offen: systemd-Timer aktivieren (dann parst er alle 5 Min automatisch).
+- systemd-Timer aktiviert (`honeypot-parser.timer`, alle 5 Min) → läuft seither vollautomatisch. Erster Backfill: **9540 Angriffe**, dann pro Auto-Lauf neue dazu (Offset-Dedup bestätigt: +319 im ersten 5-Min-Lauf).
+- Erste Auswertung direkt per SQL auf dem Server — so sah es VOR dem Dashboard aus:
+
+![SQLite-Auswertung auf dem Server](docs/screenshots/week2-sqlite-stats.png)
 #### Probleme & Notizen
 - Cron durch systemd Timer ersetzt (honeypot-parser.timer, alle 5 Min) so ist est sauberer als Crontab.
 - Parser-Code war fertig & getestet; das Live-Schalten haben wir am 22.06. gemacht.
@@ -177,50 +180,59 @@ Eigener SSH-Test —> gelandet in der Cowrie-Fake-Shell root@srv-prod-01:
  
 ### Week 3 — Flask REST API
  
-**Period:** `DD.MM.YYYY – DD.MM.YYYY`  
-**Status:**  Nicht angefangen
+**Period:** `22.06.2026`  
+**Status:** Fertig —> API läuft, 18 Tests grün, auf dem Server deployed
  
-#### Planned
-- [ ] Flask App Factory in `api/app.py`
-- [ ] `GET /api/attacks` — Kartendaten (IP-Cluster mit lat/lon/count)
-- [ ] `GET /api/stats` — Aggregierte Statistiken
-- [ ] `GET /api/recent` — Live-Feed letzte 50 Events
-- [ ] HTTP Basic Auth Decorator (`api/auth.py`)
-- [ ] Security Headers Middleware (CSP, X-Frame-Options, etc.)
-- [ ] Rate Limiting via `flask-limiter` (60 req/min)
-- [ ] Alle SQL-Queries: nur Parameterized Statements
-#### Actually done
-> *(Fill in after the session)*
- 
--
-#### Problems & notes
-> *(Anything unexpected, links, commands that helped)*
- 
--
+#### Geplant
+- [x] Flask App Factory in `api/app.py`
+- [x] `GET /api/attacks` — Kartendaten (IP-Cluster mit lat/lon/count)
+- [x] `GET /api/stats` — Aggregierte Statistiken
+- [x] `GET /api/recent` — Live-Feed letzte 50 Events
+- [x] HTTP Basic Auth Decorator (`api/auth.py`)
+- [x] Security Headers Middleware (CSP, X-Frame-Options, etc.)
+- [x] Rate Limiting via `flask-limiter` (60 req/min)
+- [x] Alle SQL-Queries: nur Parameterized Statements
+#### Erledigt
+- App-Factory `api/app.py` baut Flask, registriert Blueprints + Middleware, liefert das Dashboard unter `/`.
+- Endpoints: `/api/attacks` (Kartendaten), `/api/stats` (Totals + Top-10 Usernames/Passwörter/Länder + Angriffe pro Stunde), `/api/recent` (letzte 50), `/api/search` (parametrisierte Filter).
+- Basic Auth (`hmac.compare_digest`) auf allen `/api/*` und auf der Dashboard-Seite. Security-Header (CSP, X-Frame-Options, nosniff) auf jeder Antwort, Rate-Limit 60/min.
+- Liest die DB über `parser.db.get_connection` (kein doppelter Code), alle Queries parametrisiert.
+- 7 neue API-Tests, insgesamt **18 grün**; lokal per `curl` verifiziert (401 ohne Login, JSON mit Login).
+- In 3 kleinen Commits gebaut, dann auf dem Server deployed (`honeypot-api.service`).
+#### Probleme & Notizen
+- Beim Server-Deploy lief der Service in einen Crash-Loop (`NotImplementedError`): der `git pull` auf dem Server war nicht durchgelaufen → noch die Stub-Version. Fix: Service stoppen, `sudo git -C /opt/honeypot pull`, neu starten.
+- API lauscht bewusst nur auf `127.0.0.1:8080` (nginx + HTTPS folgen in Woche 6) → Zugriff vorerst per SSH-Tunnel.
 ---
  
 ### Week 4 — Dashboard Frontend
  
-**Period:** `DD.MM.YYYY – DD.MM.YYYY`  
-**Status:**  Nicht angefangen
+**Period:** `22.06.2026`  
+**Status:** Fertig —> Live-Dashboard zeigt echte Angriffe (11'652 zum Zeitpunkt des Screenshots)
  
-#### Planned
-- [ ] Leaflet.js Weltkarte mit CartoDB Dark Theme
-- [ ] Circle Markers skaliert nach `log(count)`, Popups mit Details
-- [ ] Stat-Karten: Total Angriffe, Unique IPs, Länder
-- [ ] Chart.js: Top 10 Passwörter (Bar), Angriffe pro Stunde (Line)
-- [ ] Live-Feed Tabelle: letzte 50 Angriffe scrollend
-- [ ] Auto-Refresh alle 30 Sekunden (kein Full-Page-Reload)
-- [ ] Design: Terminal-Ästhetik (#0a0a0a bg, #00ff41 text, Monospace)
-- [ ] Alles via `textContent` rendern — kein `innerHTML`
-#### Actually done
-> *(Fill in after the session)*
- 
--
-#### Problems & notes
-> *(Anything unexpected, links, commands that helped)*
- 
--
+#### Geplant
+- [x] Leaflet.js Weltkarte mit CartoDB Dark Theme
+- [x] Circle Markers skaliert nach `log(count)`, Popups mit Details
+- [x] Stat-Karten: Total Angriffe, Unique IPs, Länder
+- [x] Chart.js: Top 10 Passwörter (Bar), Angriffe pro Stunde (Line)
+- [x] Live-Feed Tabelle: letzte 50 Angriffe
+- [x] Auto-Refresh alle 30 Sekunden (kein Full-Page-Reload)
+- [x] Design: Terminal-Ästhetik (#0a0a0a bg, #00ff41 text, Monospace)
+- [x] Alles via `textContent` rendern — kein `innerHTML`
+#### Erledigt
+- Single-Page-Dashboard (`frontend/templates/dashboard.html`) mit Leaflet-Weltkarte (CARTO Dark), Chart.js und Live-Feed, Terminal-Optik.
+- Karte: ein grüner Kreis pro Angreifer-IP, Grösse nach `log(count)`, Popup mit IP/Land/Anzahl.
+- Stat-Karten (Total / Unique IPs / Länder), Top-10-Passwörter (Balken), Angriffe pro Stunde (Linie), Live-Feed der letzten 50.
+- Auto-Refresh alle 30s, alles über `textContent` gerendert (kein `innerHTML`, XSS-sicher).
+- Dashboard-Seite hinter Login → der Browser nutzt den Login automatisch für die API-Abrufe.
+
+Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
+
+![Dashboard — Weltkarte](docs/screenshots/week4-dashboard-map.png)
+
+![Dashboard — Charts & Live-Feed](docs/screenshots/week4-dashboard-charts.png)
+#### Probleme & Notizen
+- SSH-Tunnel nötig (`ssh -p 2222 -L 8080:127.0.0.1:8080 …`), weil die API nur auf localhost lauscht. Das „Connection refused" im Tunnel hiess: der Service lief noch nicht (siehe Crash-Loop in Woche 3).
+- Erkenntnisse aus den echten Daten: Niederlande massiv überrepräsentiert (Hosting-Infrastruktur, nicht Standort der Angreifer); klarer Angriffs-Peak um ~04:00 und ~15:00 Uhr; `alpine`/`pi` deuten auf gezielte IoT-Angriffe.
 ---
  
 ### Week 5 — Analysis & Advanced Features
