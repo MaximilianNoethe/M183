@@ -40,6 +40,49 @@ Internet (echte Angreifer)
   
 ---
  
+## Lokal starten (Quickstart)
+
+> Voraussetzungen: Python 3.11+ und git. Der Honeypot-Sensor selbst läuft auf dem
+> Server — lokal nimmst du die Pipeline (Parser + Tests, ab Woche 3/4 auch API +
+> Dashboard) in Betrieb.
+
+```bash
+git clone https://github.com/MaximilianNoethe/M183.git
+cd M183/honeypot-dashboard
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+cp .env.example .env          # Werte anpassen: DASHBOARD_USER/PASSWORD, SECRET_KEY
+```
+
+**Tests laufen lassen** — beweist, dass Parser + GeoIP lokal funktionieren:
+
+```bash
+pytest tests/ -v              # 11 Tests gegen tests/fixtures/sample_cowrie.json
+```
+
+**Parser lokal ausprobieren** — schreibt die 20 Beispiel-Events des Fixtures in eine
+lokale SQLite-DB (optional, macht echte GeoIP-Abfragen → ~30s beim ersten Mal):
+
+```bash
+COWRIE_LOG_PATH=tests/fixtures/sample_cowrie.json DATABASE_PATH=local.db \
+  python3 -m parser.log_parser
+sqlite3 local.db "SELECT COUNT(*) FROM attacks;"
+```
+
+**API + Dashboard** (ab Woche 3/4):
+
+```bash
+python3 -m api.app            # startet Flask auf http://localhost:8080
+```
+
+Auf dem Server läuft der Parser nicht manuell, sondern automatisch via systemd-Timer
+gegen die echten Cowrie-Logs (alle 5 Min).
+
+---
+
 ## Journal
  
 > Dieses Journal tracked was ich geplant habe vs. was ich wirklich erreicht habe in dieser Woche
