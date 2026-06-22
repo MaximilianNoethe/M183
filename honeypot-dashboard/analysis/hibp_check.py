@@ -1,12 +1,21 @@
-"""Week 5: HaveIBeenPwned k-Anonymity password check.
+"""HaveIBeenPwned k-Anonymity check: only the first 5 SHA1 chars leave the server."""
 
-Sends only the first 5 chars of the SHA1 hash; the raw password never leaves
-the server. STUB — Week 5.
-"""
+import hashlib
 
-from __future__ import annotations
+import requests
+
+API = "https://api.pwnedpasswords.com/range/"
 
 
-def check_password(password: str) -> int:
-    """Return breach count for a password via HIBP k-Anonymity, or 0."""
-    raise NotImplementedError("Week 5: HIBP check not implemented yet.")
+def check_password(password):
+    if not password:
+        return 0
+    digest = hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
+    prefix, suffix = digest[:5], digest[5:]
+    resp = requests.get(API + prefix, timeout=5)
+    resp.raise_for_status()
+    for line in resp.text.splitlines():
+        found, _, count = line.partition(":")
+        if found == suffix:
+            return int(count)
+    return 0
