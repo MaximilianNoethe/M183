@@ -2,120 +2,132 @@
 
 Auswertung der echten Angriffe, die mein Cowrie-Honeypot (Kamatera-VPS, Frankfurt,
 öffentliche IP) aus dem Internet eingefangen hat. Alle Zahlen stammen aus der
-SQLite-DB, die der Parser aus Cowries JSON-Logs füllt.
+SQLite-DB, die der Parser aus Cowries JSON-Logs füllt (inkl. der täglich rotierten
+Logs der ganzen Laufzeit).
 
 ## Messzeitraum & Datenbasis
-- **Zeitfenster:** 22.06.2026, 00:01 – 16:36 UTC (~16,5 Stunden, ein Log-Tag).
-- Cowrie rotiert die JSON-Logs täglich; ausgewertet ist hier der aktuelle Tag
-  (`cowrie.json`). Ältere Tage liegen als rotierte Dateien vor → mehr Zeitraum
-  wäre durch Einlesen der rotierten Logs möglich (siehe „Grenzen").
+- **Zeitfenster:** 15.06.2026 14:39 – 22.06.2026 18:24 UTC (~7 Tage / ~172 h).
+- Quelle: `cowrie.json` + 7 rotierte Tagesdateien, vom Parser zusammengeführt.
 
 ## Kernzahlen
 | Metrik | Wert |
 |---|---|
-| Angriffs-Events total | **12'165** |
-| Unique Angreifer-IPs | **102** |
-| Vertretene Länder | **30** |
-| Events pro Stunde (Schnitt) | **~737** |
-| Zeit bis zum 1. Angriff | < 1 Minute nach „Tagesbeginn" im Log (Dauerbeschuss) |
-
-Bei nur 102 IPs und 12'165 Events kommen im Schnitt **~120 Events pro IP** — klares
-Brute-Force-/Automatisierungs-Muster, keine menschlichen Einzelzugriffe.
+| Angriffs-Events total | **70'020** |
+| Unique Angreifer-IPs | **1'242** |
+| Vertretene Länder | **75** |
+| Events pro Stunde (Schnitt) | **~408** (~9'800/Tag) |
+| Events pro IP (Schnitt) | ~56 |
+| Zeit bis zum 1. Angriff | wenige Minuten nach Live-Schaltung |
 
 ## Geografische Verteilung
 | Land | Events |
 |---|---|
-| Niederlande | 6'804 |
-| USA | 820 |
-| China | 785 |
-| Bulgarien | 540 |
-| Polen | 168 |
-| Pakistan | 135 |
-| Belgien | 134 |
-| Iran / Syrien / Venezuela | 25–30 |
+| Niederlande | 47'768 (**68 %**) |
+| Bulgarien | 6'147 |
+| USA | 6'133 |
+| China | 1'783 |
+| Polen | 1'563 |
+| Singapur | 1'152 |
+| Pakistan | 1'097 |
+| Belgien | 1'005 |
+| Deutschland | 909 |
+| UK | 859 |
 
-**Interpretation:** Die Niederlande dominieren massiv — das ist **nicht** der Standort
-der Angreifer, sondern wo billige (teils „bulletproof") VPS-/Hosting-Infrastruktur
-steht. GeoIP zeigt die **Maschine**, nicht den Menschen. Angriffe aus dem Internet
-kommen fast immer von gekaperten oder gemieteten Servern, nicht vom Heim-PC des Täters.
+**Interpretation:** Die Niederlande machen allein **68 %** aus — das ist **nicht** der
+Standort der Angreifer, sondern wo billige (teils „bulletproof") Hosting-Infrastruktur
+steht. GeoIP zeigt die **Maschine**, nicht den Menschen.
+
+## Hosting-Provider (ASN) — die schärfste Sicht
+| Provider (ASN) | Events | IPs |
+|---|---|---|
+| AS51396 Pfcloud UG | 25'941 | 11 |
+| AS214472 Offshore LC | 15'766 | 15 |
+| AS14061 DigitalOcean | 4'672 | 35 |
+| AS209630 VASH KREDIT BANK | 4'576 | 3 |
+| AS44382 Fiba Cloud | 2'282 | 1 |
+| AS47890 UNMANAGED LTD | 1'268 | 10 |
+| AS396982 Google | 1'065 | 90 |
+| AS37963 Alibaba | 771 | 17 |
+
+**Interpretation:** Zwei „Offshore"/bulletproof-Hoster — **Pfcloud UG (11 IPs)** und
+**Offshore LC (15 IPs)** — verursachen zusammen **~60 % des gesamten Traffics aus nur
+26 IPs**. Die Namen (`Offshore`, `UNMANAGED`) sprechen für sich. Im Gegensatz dazu
+**Google (90 IPs, nur 1'065 Events)**: breit gestreutes, niedrigfrequentes Scanning —
+ein ganz anderes Muster (verteilte Aufklärung statt Dauerbeschuss). Die ASN-Sicht
+trennt also „Brute-Force-Bienenstöcke" von „verteilten Scannern" — das sieht man in
+der reinen Länder-Statistik nicht.
 
 ## Event-Verteilung
 | Event | Anzahl |
 |---|---|
-| `cowrie.session.connect` | 4'779 |
-| `cowrie.command.input` | 3'872 |
-| `cowrie.login.success` | 3'501 |
-| `cowrie.login.failed` | 13 |
+| `cowrie.session.connect` | 29'410 |
+| `cowrie.login.success` | 20'163 |
+| `cowrie.command.input` | 20'118 |
+| `cowrie.login.failed` | 217 |
+| `cowrie.session.file_download` | 112 |
 
-**Wichtige Einordnung:** Dass „success" >> „failed" ist, heisst **nicht**, dass die
-Bots gute Passwörter erraten haben. Cowrie ist als Honeypot bewusst **freizügig** bei
-der Fake-Anmeldung — es lässt die Angreifer rein, um zu beobachten, was sie *danach*
-tun. Die spannenden Daten sind die **3'872 abgesetzten Befehle**.
+**Einordnung:** „success" ≫ „failed" (20'163 vs 217) heisst **nicht**, dass die Bots gute
+Passwörter erraten haben — Cowrie ist als Honeypot bewusst freizügig bei der Fake-Anmeldung,
+um zu beobachten, was die Angreifer *danach* tun. Die **20'118 Befehle** und **112
+Datei-Downloads** (echte Malware-Nachladeversuche) sind der eigentliche Forschungswert.
 
 ## Credentials
-**Top-Usernames:** `root` (661), `admin` (111), `user`, `ubuntu`, `deploy`, `test`,
-`pi` (Raspberry-Pi-Default), `dev`, `guest`. → Bots zielen gleichzeitig auf
-Cloud-Server (`ubuntu`/`deploy`) **und** IoT/Bastel-Geräte (`pi`).
+**Top-Usernames:** `root` (5'171), `admin` (850), `user`, `ubuntu`, `deploy`, `test`,
+`claude`, `pi` (Raspberry Pi), `dev`, **`minecraft`** (185 — Gameserver-Ziel!), `guest`.
+→ Bots zielen auf Cloud-Server (`ubuntu`/`deploy`), IoT (`pi`) **und** Gameserver (`minecraft`).
 
 **Top-Passwörter + Abgleich mit HaveIBeenPwned** (k-Anonymity — das echte Passwort
-verlässt den Server nie, nur die ersten 5 SHA1-Zeichen):
+verlässt den Server nie, nur die ersten 5 SHA1-Zeichen). Die HIBP-Zahl ist die *globale*
+Anzahl an Leaks, in denen das Passwort vorkommt:
 
 | Passwort | Versuche | In bekannten Daten-Leaks (HIBP) |
 |---|---|---|
-| `123456` | 287 | **210'318'957** |
-| `123` | 143 | 15'155'838 |
-| `1234` | 113 | 30'330'441 |
-| `alpine` | 87 | 132'980 |
-| `root` | 85 | 2'260'564 |
-| `12345678` | 79 | 70'550'619 |
-| `password` | 78 | 52'343'151 |
-| `12345` | 74 | 31'084'566 |
-| `123456789` | 56 | 81'075'150 |
+| `123456` | 1'473 | **210'318'957** |
+| `123` | 829 | 15'155'838 |
+| `1234` | 666 | 30'330'441 |
+| `alpine` | 632 | 132'980 |
+| `1` | 545 | 3'459'449 |
+| `root` | 495 | 2'260'564 |
+| `12345678` | 484 | 70'550'619 |
+| `password` | 440 | 52'343'151 |
+| `12345` | 412 | 31'084'566 |
+| `123456789` | 316 | 81'075'150 |
+| `admin` | 255 | 42'154'643 |
+| `abc123` | 216 | 12'990'806 |
 
-**Interpretation:** **100 % der Top-Passwörter** stehen in HIBP — oft in
-zwei- bis dreistelligen Millionenzahlen (`123456` allein 210 Mio). Die Angreifer
-raten nicht kreativ, sie spielen **bekannte Leak-/Standard-Listen** durch. Direkte
-Konsequenz für die Verteidigung: Jedes Passwort, das in HIBP auftaucht, ist faktisch
-„öffentlich" — genau solche Listen fahren die Bots ab.
+**Interpretation:** **100 % der Top-Passwörter** stehen in HIBP — oft in zwei- bis
+dreistelligen Millionenzahlen (`123456` allein 210 Mio). Die Angreifer raten nicht
+kreativ, sie spielen **bekannte Leak-/Standard-Listen** durch.
 
 ## Was die Angreifer TUN (nach dem „Login")
-Die abgesetzten Befehle zeigen ein klares, automatisiertes Vorgehen:
+1. **System-Fingerprinting** — mit Abstand am häufigsten: `uname -s -v -n -r -m` (17'828×,
+   plus Varianten). Erster Schritt: OS + Architektur bestimmen, um das **passende
+   Malware-Binary** zu wählen.
+2. **Diebstahl der Passwort-Hashes** — der Befehl
+   `uname -a; id; cat /etc/shadow /etc/passwd; lscpu; …` (82×) liest gezielt **`/etc/shadow`**
+   (die Passwort-Hashes) und `/etc/passwd` aus → Credential-Harvesting.
+3. **Hardware-Recon fürs Krypto-Mining** — Skripte lesen `MemTotal` aus `/proc/meminfo`,
+   prüfen `> 1 GB` RAM, CPU-Modell, `nproc` und GPU (`lspci | grep nvidia`). Übersetzt:
+   „Lohnt sich die Maschine zum Schürfen?"
+4. **Malware-Nachladen** — 112 `file_download`-Events: Bots holen per `wget`/`curl`
+   Payloads von externen Servern.
 
-1. **System-Fingerprinting** — mit Abstand am häufigsten: `uname -s -v -n -r -m`
-   (3'262×). Erster Schritt jedes Bots: Betriebssystem + Architektur bestimmen, um
-   das **passende Malware-Binary** auszuwählen.
-2. **Hardware-Recon für Krypto-Mining** — ein wiederkehrendes Recon-Skript liest
-   `MemTotal` aus `/proc/meminfo` und prüft `> 1048576` (>1 GB RAM), dazu CPU-Modell,
-   `nproc` und `lspci | grep -i nvidia` (GPU!). Übersetzt: „Lohnt sich diese Maschine
-   zum Schürfen?" GPU/viel RAM = lohnendes Ziel.
-3. **Privilege Escalation mit Leak-Passwörtern** — `echo '123456789' | sudo -S bash -c …`
-   (und `123456`, `12345`): die Bots versuchen direkt, mit denselben Standard-Passwörtern
-   `sudo`-Rechte zu bekommen.
-
-Das ist der eigentliche Forschungswert: man sieht **live**, dass automatisierte
-SSH-Botnetze eine feste Pipeline fahren — *einloggen → System & Hardware profilen →
-ausweiten → (Malware nachladen)*.
+Man sieht **live** die feste Pipeline automatisierter SSH-Botnetze: *einloggen → System
+& Hardware profilen → Credentials/Hashes abgreifen → Malware nachladen*.
 
 ## Botnet-Wellen (koordinierte Angriffe)
-Minuten, in denen ≥5 verschiedene IPs gleichzeitig zuschlugen (`botnet_detector.py`):
-
-| Zeitfenster (UTC) | Distinct IPs | Versuche |
-|---|---|---|
-| 22.06. 01:35 | 5 | 37 |
-| 22.06. 01:41 | 5 | 17 |
-| 22.06. 13:44 | 5 | 13 |
-
-Mehrere IPs, die im selben Minutenfenster mit demselben Muster feuern, deuten auf
-**koordinierte Botnetz-Aktivität** hin (gemeinsame Steuerung / geteilte Listen).
+**39 Minuten-Fenster** mit ≥5 verschiedenen IPs, die gleichzeitig zuschlugen
+(`botnet_detector.py`). Mehrere IPs, die im selben Minutenfenster mit demselben Muster
+feuern, deuten auf **koordinierte Botnetz-Aktivität** hin (gemeinsame Steuerung / geteilte Listen).
 
 ## Fazit
 - Ein frisch ans Internet gehängter Server wird **innerhalb von Minuten** und danach
-  **dauerhaft (~700 Events/h)** automatisiert angegriffen.
+  **dauerhaft (~400 Events/h)** automatisiert angegriffen.
+- Der Beschuss ist hochkonzentriert: **~60 % aus 26 IPs zweier Offshore-Hoster.**
 - Angreifer nutzen ausschliesslich **bekannte, geleakte Standard-Passwörter** (100 %
   HIBP-Treffer) — starke/zufällige Passwörter + Key-only-SSH hätten alles abgewehrt.
-- Nach dem Zugang folgt eine **automatisierte Recon-Pipeline** (OS/Hardware-Profiling
-  Richtung Krypto-Mining), nicht zielgerichtetes Hacking.
-- GeoIP misst **Infrastruktur**, nicht Täter-Herkunft (NL-Dominanz = Hosting).
+- Nach dem Zugang folgt eine **automatisierte Pipeline**: Fingerprinting, `/etc/shadow`-Klau,
+  Mining-Recon, Malware-Download — nicht zielgerichtetes Hacking.
 
 ## Schutzmassnahmen (Defense Recommendations)
 Was die Daten konkret für die Absicherung eines Servers bedeuten:
@@ -133,14 +145,14 @@ Was die Daten konkret für die Absicherung eines Servers bedeuten:
    `wget`/`curl` nach — strikte Egress-Regeln stoppen das.
 
 ## Methodik & Grenzen
-- **Methodik:** Cowrie (SSH/Telnet-Emulation) → JSON-Log → Python-Parser (Offset-Dedup,
-  GeoIP via ip-api.com mit Cache) → SQLite → Flask-API → Dashboard/Analyse.
-- **Grenzen:** Snapshot eines Log-Tages (~16,5 h); für mehr Zeitraum müssten die rotierten
-  Cowrie-Logs mitgelesen werden. „login.success" ist ein Cowrie-Artefakt (freizügige
-  Fake-Auth), kein Beweis erratener Passwörter. GeoIP ist auf Hosting-Standort verzerrt.
+- **Methodik:** Cowrie (SSH/Telnet-Emulation) → JSON-Log → Python-Parser (rotierte Logs,
+  Offset-Dedup, GeoIP+ASN via ip-api.com mit Cache) → SQLite → Flask-API → Dashboard/Analyse.
+- **Grenzen:** „login.success" ist ein Cowrie-Artefakt (freizügige Fake-Auth), kein Beweis
+  erratener Passwörter. GeoIP ist auf Hosting-Standort verzerrt (Länder ≠ Täter-Herkunft);
+  die ASN-Sicht ist hier aussagekräftiger.
 
 ## Ethik & Rechtliches
 Reiner Beobachtungs-Honeypot — **keine** Gegenangriffe, **kein** Kontakt zu
 Angreifer-Systemen. IPs nur für Geolokalisierung/Mustererkennung. HIBP-Abgleich über
 k-Anonymity (das rohe Passwort verlässt den Server nie). Nach Schweizer DSG sind IPs
-Personendaten → die Datenbank bleibt privat (Dashboard nur per SSH-Tunnel, hinter Login).
+Personendaten → die Datenbank bleibt privat (Dashboard hinter Login + HTTPS).

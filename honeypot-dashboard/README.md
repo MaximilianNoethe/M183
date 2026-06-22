@@ -257,10 +257,11 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 - API: `/api/analysis/passwords` (Top-PW + Leak-Treffer), `/api/analysis/botnet`, `/api/analysis/commands` (Top-Befehle der Angreifer), `/api/export/csv`.
 - Dashboard: neuer Analyse-Bereich (Top-Befehle, HIBP-Leak-Treffer, Botnet-Wellen) + CSV-Export-Button.
 - 6 neue Tests (insgesamt **24 grün**), auf dem Server deployed.
-- **`RESEARCH.md` geschrieben** mit echten Zahlen + Interpretation (12'165 Angriffe, 102 IPs, 30 Länder).
+- **`RESEARCH.md` geschrieben** mit echten Zahlen + Interpretation (über die ganze Woche: **70'020 Angriffe, 1'242 IPs, 75 Länder**).
 #### Erkenntnisse (Highlights, Details in `RESEARCH.md`)
 - **100 % der Top-Passwörter** stehen in HIBP — `123456` allein in **210 Mio** Leaks. Die Bots fahren reine Leak-Listen ab.
-- Häufigster Befehl: `uname -s -v -n -r -m` (3'262×) → OS-Fingerprinting, um das passende Malware-Binary zu wählen.
+- **~60 % des Traffics aus nur 26 IPs** zweier Offshore-Hoster (Pfcloud UG, Offshore LC) — die ASN-Sicht ist schärfer als die Länder-Statistik.
+- Häufigster Befehl: `uname -s -v -n -r -m` (17'828×, OS-Fingerprinting). Der Befehl `cat /etc/shadow /etc/passwd` (82×) zeigt gezielten **Passwort-Hash-Klau**.
 - Recon-Skripte prüfen RAM/CPU/GPU (`nvidia`) → Eignung fürs **Krypto-Mining**; dazu `sudo -S` mit Leak-Passwörtern (Privilege Escalation).
 - `login.success` >> `login.failed` ist ein **Cowrie-Artefakt** (freizügige Fake-Auth), kein erratenes Passwort.
 #### Probleme & Notizen
@@ -296,17 +297,18 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 ## Research Findings
 
 > Echte Daten vom Honeypot. Volle Auswertung + Interpretation in **[`RESEARCH.md`](RESEARCH.md)**.
-> Snapshot: 22.06.2026, 00:01–16:36 UTC (~16,5 h Log-Tag).
+> Zeitraum: 15.–22.06.2026 (~7 Tage, 8 Logdateien zusammengeführt).
 
 | Metric | Value |
 |--------|-------|
-| Angriffs-Events total | 12'165 |
-| Unique attacker IPs | 102 |
-| Countries represented | 30 |
-| Events pro Stunde (Schnitt) | ~737 |
-| Häufigster Username | `root` (661×) |
-| Häufigstes Passwort | `123456` (287×) |
+| Angriffs-Events total | 70'020 |
+| Unique attacker IPs | 1'242 |
+| Countries represented | 75 |
+| Events pro Stunde (Schnitt) | ~408 |
+| Häufigster Username | `root` (5'171×) |
+| Häufigstes Passwort | `123456` (1'473×) |
 | `123456` in HIBP-Leaks | 210'318'957 |
 | Top-Passwörter in HIBP | 100 % |
-| Häufigster Angreifer-Befehl | `uname -s -v -n -r -m` (3'262×) |
+| Grösster Hosting-Provider | Pfcloud UG (25'941 Events / 11 IPs) |
+| Häufigster Angreifer-Befehl | `uname -s -v -n -r -m` (17'828×) |
  
