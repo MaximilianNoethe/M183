@@ -32,7 +32,7 @@ Internet (echte Angreifer)
 | Week | Topic | Status |
 |------|-------|--------|
 | 1 | VPS · Cowrie · Firewall | Fertig —> Honeypot live |
-| 2 | Log Parser · SQLite · GeoIP | Code fertig, Deployment offen |
+| 2 | Log Parser · SQLite · GeoIP | Deployed —> Parser läuft live auf dem Server |
 | 3 | Flask API · Auth · Security Headers | Nicht angefangen |
 | 4 | Dashboard · World Map · Charts | Nicht angefangen |
 | 5 | Analysis · HIBP · Botnet Detection | Nicht angefangen |
@@ -142,7 +142,7 @@ Eigener SSH-Test —> gelandet in der Cowrie-Fake-Shell root@srv-prod-01:
 ### Week 2 — Log Parser & Database Pipeline
  
 **Period:** `15.06.2026`  
-**Status:** Code fertig & getestet, das Deployment ist auf dem Server offen
+**Status:** Code fertig & getestet; am 22.06.2026 auf dem Server deployed —> echte Angriffe landen in SQLite
  
 #### Geplant
 - SQLite Schema erstellen (attacks + ip_cache Tabellen, Indizes)
@@ -156,10 +156,23 @@ Eigener SSH-Test —> gelandet in der Cowrie-Fake-Shell root@srv-prod-01:
 - parser/geoip.py -> GeoIP über ip-api.com immer erst ip_cache prüfen, auf 45 req pro min herunter geschalten.
 - parser/log_parser.py — liest cowrie.json ab gespeichertem Offset, filtert relevante Events, reichert mit GeoIP an, schreibt parametrisiert in SQLite.
 - Tests: 11 grün (5 DB + 6 neue für Parser & GeoIP), laufen gegen das Fixture mit RFC-5737-IPs.
-- Offen für nächste Session: Parser auf dem Server ausrollen (venv + .env + systemd-Timer alle 5 Min) und DB mit echten Daten bestätigen.
+
+**Deployment am 22.06.2026 (heute) —> Parser läuft auf dem Server:**
+- Repo auf dem Server aktualisiert, Data-Dir `/var/lib/honeypot` angelegt (cowrie:cowrie).
+- Eigenes Projekt-venv `/opt/honeypot/.venv` + requirements installiert (getrennt von Cowries venv).
+- `.env` gesetzt (DATABASE_PATH, COWRIE_LOG_PATH, Dashboard-Login), Rechte 640 root:cowrie.
+- Erster echter Parser-Lauf: 88 unterschiedliche Angreifer-IPs im Log, GeoIP-Anreicherung läuft, Angriffe landen in SQLite.
+- Noch offen: systemd-Timer aktivieren (dann parst er alle 5 Min automatisch).
 #### Probleme & Notizen
 - Cron durch systemd Timer ersetzt (honeypot-parser.timer, alle 5 Min) so ist est sauberer als Crontab.
-- Parser code ist fertig & getestet. Das Live Schalten auf dem Server kommt in der nächsten Session.
+- Parser-Code war fertig & getestet; das Live-Schalten haben wir am 22.06. gemacht.
+
+**Aufwand & Blockaden 22.06.2026 (Deployment-Session, ~1.5 h bisher):**
+- ~0.5 h: README-Quickstart geschrieben (Reaktion auf Reviewer-Feedback, Note 4.5).
+- git "dubious ownership" auf `/opt/M183` (Repo gehört root) → `safe.directory` + pull mit sudo (~10 min weg).
+- nano: nicht mehr rausgekommen (`Ctrl+O` vs `Ctrl+0`), Terminal geschlossen, `.env` nochmal gemacht (~15 min weg).
+- Parser-Lauf wirkte „hängend" → war die GeoIP-Drossel (1,4 s pro neuer IP, ~2 Min bei 88 IPs). Einmal aus Versehen mit Ctrl+C abgebrochen (committet erst am Ende → nichts gespeichert), dann durchlaufen lassen.
+- Wo Zeit verloren geht: Server-Bedienung (nano/Rechte/sudo/Ownership) + Warten auf GeoIP. Idee für später: ip-api Batch-Endpoint (100 IPs pro Anfrage).
 ---
  
 ### Week 3 — Flask REST API
