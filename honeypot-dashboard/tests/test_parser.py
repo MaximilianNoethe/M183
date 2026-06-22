@@ -21,7 +21,10 @@ def temp_db(tmp_path):
 def fake_geo(monkeypatch):
     """Stub out GeoIP so parser tests never hit the network."""
     monkeypatch.setattr(
-        geoip, "get_geo", lambda ip, conn: ("Testland", "Test City", 1.0, 2.0)
+        geoip, "get_geo",
+        lambda ip, conn: {"country": "Testland", "city": "Test City",
+                          "latitude": 1.0, "longitude": 2.0,
+                          "asn": "AS64500 Testnet", "org": "TestOrg"},
     )
 
 
@@ -89,7 +92,7 @@ def test_attacks_schema_columns(temp_db):
         conn.close()
     expected = {
         "id", "timestamp", "src_ip", "country", "city", "latitude",
-        "longitude", "username", "password", "event_type", "raw_command",
+        "longitude", "asn", "org", "username", "password", "event_type", "raw_command",
     }
     assert cols == expected
 
@@ -149,6 +152,32 @@ def test_missing_log_returns_zero(temp_db, fake_geo):
     assert log_parser.run(log_path="/no/such/cowrie.json", db_path=temp_db) == 0
 
 
+def test_asn_stored(temp_db, fake_geo):
+    log_parser.run(log_path=FIXTURE, db_path=temp_db)
+    conn = db.get_connection(temp_db)
+    try:
+        row = conn.execute(
+            "SELECT asn, org FROM attacks WHERE src_ip = ?", ("192.0.2.1",)
+        ).fetchone()
+    finally:
+        conn.close()
+    assert row["asn"] == "AS64500 Testnet"
+    assert row["org"] == "TestOrg"
+
+
+def test_run_all_reads_rotated_logs(tmp_path, temp_db, fake_geo, monkeypatch):
+    logdir = tmp_path / "logs"
+    logdir.mkdir()
+    main = logdir / "cowrie.json"
+    rotated = logdir / "cowrie.json.2026-06-21"
+    line = ('{"eventid":"cowrie.login.failed","src_ip":"192.0.2.%d",'
+            '"username":"root","password":"x","timestamp":"2026-06-2%dT00:00:00Z"}\n')
+    rotated.write_text(line % (1, 1))
+    main.write_text(line % (2, 2))
+    monkeypatch.setenv("COWRIE_LOG_PATH", str(main))
+    assert log_parser.run_all(db_path=temp_db) == 2
+
+
 def test_geoip_uses_cache_first(temp_db, monkeypatch):
     conn = db.get_connection(temp_db)
     try:
@@ -160,4 +189,6 @@ def test_geoip_uses_cache_first(temp_db, monkeypatch):
         geo = geoip.get_geo("192.0.2.50", conn)
     finally:
         conn.close()
-    assert geo == ("Cacheland", "Cache City", 5.0, 6.0)
+    assert geo["country"] == "Cacheland"
+    assert geo["city"] == "Cache City"
+    assert geo["latitude"] == 5.0 and geo["longitude"] == 6.0

