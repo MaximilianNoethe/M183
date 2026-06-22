@@ -10,20 +10,23 @@
  
 ```
 Internet (echte Angreifer)
+        │   SSH :22 / Telnet :23  ──NAT──>  Cowrie :2223 / :2224
+        ▼
+  [Cowrie Honeypot]              JSON-Logs bei jedem Angriff
         │
         ▼
-  [Cowrie Honeypot]  ←── SSH Port 22 / Telnet Port 23
-  JSON logs bei jedem Angriff
+  [log_parser.py]                systemd-Timer alle 5 min, liest auch rotierte Logs
+  GeoIP + ASN (ip-api, Cache)  ─────────────>  SQLite
         │
         ▼
-  [log_parser.py]    ←── Lauft jede 5 min via cron
-  GeoIP enrichment → SQLite DB
+  [Flask API]   /api/attacks /stats /recent /search
+                /api/analysis/* (HIBP · Botnet · Befehle · Provider) · /api/export/csv
+        │   Basic Auth + Security-Header + Rate-Limit
+        ▼
+  [nginx :443]  selbstsigniertes HTTPS  ──>  Flask :8080 (localhost)
         │
         ▼
-  [Flask API]        ←── /api/attacks  /api/stats  /api/recent
-        │
-        ▼
-  [Dashboard]        ←── Leaflet world map + Chart.js stats
+  [Dashboard]   Leaflet-Karte · Chart.js · Live-Feed · Analyse · Suche
 ```
  
 ---
@@ -37,7 +40,7 @@ Internet (echte Angreifer)
 | 3 | Flask API · Auth · Security Headers | Fertig —> 18 Tests grün, deployed |
 | 4 | Dashboard · World Map · Charts | Fertig —> Live mit echten Angriffen |
 | 5 | Analysis · HIBP · Botnet Detection | Fertig —> RESEARCH.md mit echten Funden |
-| 6 | HTTPS · Hardening · Documentation | Nicht angefangen |
+| 6 | HTTPS · Hardening · Documentation | Configs/Skripte fertig, Server-Deploy offen |
   
 ---
  
@@ -267,26 +270,27 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
  
 ### Week 6 — HTTPS, Hardening & Documentation
  
-**Period:** `DD.MM.YYYY – DD.MM.YYYY`  
-**Status:**  Nicht angefangen
+**Period:** `22.06.2026`  
+**Status:** Configs/Skripte + Doku fertig; nginx/Fail2Ban-Deploy auf dem Server offen
  
-#### Planned
-- [ ] nginx Reverse Proxy vor Flask
-- [ ] Let's Encrypt Zertifikat via Certbot
-- [ ] HSTS Header in nginx
-- [ ] Fail2Ban: SSH Port 2222 + Dashboard Rate-Limit
-- [ ] Alle Secrets in `.env` — keine Hardcoded Values
-- [ ] `git log` prüfen — keine Secrets in History
-- [ ] `RESEARCH.md` schreiben (Findings, Statistiken, Erkenntnisse)
-- [ ] README finalisieren mit Screenshots
-#### Actually done
-> *(Fill in after the session)*
- 
--
-#### Problems & notes
-> *(Anything unexpected, links, commands that helped)*
- 
--
+#### Geplant
+- [x] nginx Reverse Proxy vor Flask
+- [x] HTTPS-Zertifikat (selbstsigniert, da keine Domain — Let's Encrypt bräuchte eine)
+- [x] HSTS Header in nginx
+- [x] Fail2Ban: echter Admin-SSH Port 2222 (Honeypot-Ports bleiben offen)
+- [x] Alle Secrets in `.env` — keine Hardcoded Values
+- [x] `RESEARCH.md` schreiben (Findings, Statistiken, Erkenntnisse)
+- [x] README finalisieren mit Screenshots + Architektur-Diagramm
+#### Erledigt
+- `nginx/honeypot.conf` — Reverse Proxy auf Flask `127.0.0.1:8080`, HTTP→HTTPS-Redirect, HSTS.
+- `scripts/setup_https.sh` — installiert nginx, generiert selbstsigniertes Zertifikat, aktiviert die Config, öffnet UFW 80/443.
+- `scripts/setup_fail2ban.sh` — Jail nur für den echten Admin-SSH `:2222` (die Cowrie-Ports bleiben bewusst offen).
+- README mit erweitertem Architektur-Diagramm (NAT, GeoIP+ASN, Analyse-API, nginx/HTTPS) + CI-Badge.
+- `RESEARCH.md` inkl. „Schutzmassnahmen"-Abschnitt aus den echten Funden.
+- Secrets-Check: alles über `os.getenv()`/`.env` (gitignored), keine Hardcoded-Werte im Code.
+#### Probleme & Notizen
+- Let's Encrypt braucht einen Domainnamen → für die blanke IP selbstsigniertes Zertifikat (Browser-Warnung ist hier ok, Research-Setup).
+- Honeypot-Ports (2223/2224) dürfen NICHT von Fail2Ban geblockt werden — die sollen ja Angriffe fangen. Jail nur auf `:2222`.
 ---
  
 ## Research Findings

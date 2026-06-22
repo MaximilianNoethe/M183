@@ -117,6 +117,21 @@ Mehrere IPs, die im selben Minutenfenster mit demselben Muster feuern, deuten au
   Richtung Krypto-Mining), nicht zielgerichtetes Hacking.
 - GeoIP misst **Infrastruktur**, nicht Täter-Herkunft (NL-Dominanz = Hosting).
 
+## Schutzmassnahmen (Defense Recommendations)
+Was die Daten konkret für die Absicherung eines Servers bedeuten:
+1. **SSH key-only + Root-Login aus.** 100 % der probierten Passwörter stehen in HIBP —
+   jede Passwort-Anmeldung ist gegen genau diese Listen verwundbar. Mein Admin-Zugang
+   ist deshalb key-only auf Port 2222, Root- und Passwort-Login deaktiviert.
+2. **Keine geleakten Passwörter.** Vor der Vergabe gegen HaveIBeenPwned prüfen
+   (k-Anonymity) — die Bots fahren exakt diese Korpora ab.
+3. **Standard-User/Port meiden.** `root`, `admin`, `ubuntu`, `pi` werden zuerst probiert;
+   SSH weg von Port 22 reduziert den Lärm massiv.
+4. **Fail2Ban auf dem echten Admin-Port** verlangsamt Brute-Force (`scripts/setup_fail2ban.sh`).
+5. **Patchen + minimale Angriffsfläche.** Die Recon-Skripte suchen gezielt nach lohnenden
+   Zielen (RAM/GPU fürs Mining) — ein schlankes, gepatchtes System ist weniger wert.
+6. **Ausgehenden Traffic einschränken.** Nach dem Zugang laden Bots Payloads per
+   `wget`/`curl` nach — strikte Egress-Regeln stoppen das.
+
 ## Methodik & Grenzen
 - **Methodik:** Cowrie (SSH/Telnet-Emulation) → JSON-Log → Python-Parser (Offset-Dedup,
   GeoIP via ip-api.com mit Cache) → SQLite → Flask-API → Dashboard/Analyse.
