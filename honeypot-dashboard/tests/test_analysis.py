@@ -105,6 +105,15 @@ def test_passwords_endpoint(client, monkeypatch):
     assert rows[0]["value"] == "123456" and rows[0]["pwned"] == 999
 
 
+def test_json_export(client):
+    assert client.get("/api/export/json").status_code == 401
+    resp = client.get("/api/export/json", headers=AUTH)
+    assert resp.status_code == 200
+    rows = resp.get_json()
+    assert isinstance(rows, list) and rows
+    assert "attachment" in resp.headers["Content-Disposition"]
+
+
 def test_csv_export(client):
     assert client.get("/api/export/csv").status_code == 401
     resp = client.get("/api/export/csv", headers=AUTH)
