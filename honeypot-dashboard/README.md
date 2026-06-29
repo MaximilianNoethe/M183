@@ -151,7 +151,9 @@ gegen die echten Cowrie-Logs (alle 5 Min).
 > Recherche und Schreiben — nicht nur das Coden. Darum liegen sie über der reinen
 > Commit-Dichte; die „Probleme & Notizen" zeigen, wo die Zeit konkret hinging. Gearbeitet
 > wurde in fokussierten Sessions; der **22.06. war ein „Mega-Session"-Tag** (Wochen 2–6
-> am Stück, Commits bis 22:34 Uhr). Summe über alles: ~20 h geplant → **~20 h tatsächlich**.
+> am Stück, Commits bis 22:34 Uhr). Summe über alles: ~24 h geplant → **~30 h tatsächlich**
+> — der Grossteil der nicht-Coding-Zeit steckt in **Woche 1** (eine ganze Woche erstmaliges
+> Server-Setup) und in der Recherche/Auswertung (RESEARCH.md).
  
 ---
  
@@ -167,7 +169,7 @@ gegen die echten Cowrie-Logs (alle 5 Min).
 - Cowrie installieren und konfigurieren (JSON-Logs, Fake-Hostname)
 - iptables NAT: Port 22/23 -> Cowrie 2223/2224
 - Ersten Log-Eintrag in cowrie.json bestätigen
-- **Aufwand (geschätzt): ~5 h**
+- **Aufwand (geschätzt): ~8 h**
 #### Erledigt
 - Kamatera VPS bestellt & läuft: Frankfurt, Ubuntu 22.04, Type B, 1 vCPU / 2 GB RAM / 30 GB SSD, öffentliche WAN-IP. <img width="2500" height="548" alt="image" src="https://github.com/user-attachments/assets/57a92b28-a10d-4243-a96b-57c165949ff4" />
 
@@ -216,8 +218,10 @@ nicht ins Coden:
   `mkdir`+`chown` müssen, sonst Rechte-Fehler.
 - Reminder: Server vor Trial-Ende (~30 Tage) löschen, sonst wird abgerechnet.
 
-**Aufwand: geschätzt ~5 h · tatsächlich ~6 h** (VPS-Setup, Hardening, Cowrie-Debugging,
-NAT/UFW-Fehlersuche, Key-Neuerzeugung — verteilt auf 08.06. + Deploy am 15.06.).
+**Aufwand: geschätzt ~8 h · tatsächlich ~13 h** — die mit Abstand grösste Position. Eine
+*ganze Woche* (08.–15.06.) erstmaliges Server-Setup: VPS provisionieren, Cowrie, iptables-NAT,
+UFW, SSH-Hardening, systemd-Units — alles zum ersten Mal, plus die dokumentierten Blockaden.
+Viel davon ist Recherche/Debugging, das keine Commits erzeugt.
 ---
  
 ### Woche 2 — Log-Parser & Datenbank-Pipeline
@@ -232,7 +236,7 @@ NAT/UFW-Fehlersuche, Key-Neuerzeugung — verteilt auf 08.06. + Deploy am 15.06.
 - Deduplizierung: Parser merkt sich letzten verarbeiteten Log-Offset
 - Cron-Job einrichten: alle 5 Minuten
 - DB mit echten Daten bestätigen (`SELECT COUNT(*) FROM attacks`)
-- **Aufwand (geschätzt): ~3 h**
+- **Aufwand (geschätzt): ~4 h**
 #### Erledigt
 - DB Helfer in parser/db.py ergänzt: insert_attack, get_offset / set_offset cache_get/cache_set.
 - parser/geoip.py -> GeoIP über ip-api.com immer erst ip_cache prüfen, auf 45 req pro min herunter geschalten.
@@ -265,7 +269,7 @@ NAT/UFW-Fehlersuche, Key-Neuerzeugung — verteilt auf 08.06. + Deploy am 15.06.
 - Parser-Lauf wirkte „hängend" → war die GeoIP-Drossel (1,4 s pro neuer IP, ~2 Min bei 88 IPs). Einmal aus Versehen mit Ctrl+C abgebrochen (committet erst am Ende → nichts gespeichert), dann durchlaufen lassen.
 - Wo Zeit verloren geht: Server-Bedienung (nano/Rechte/sudo/Ownership) + Warten auf GeoIP. Die Idee „ip-api Batch-Endpoint" wurde in Block 07 tatsächlich umgesetzt.
 
-**Aufwand: geschätzt ~3 h · tatsächlich ~3 h** (Parser+Tests am 15.06., Deployment am
+**Aufwand: geschätzt ~4 h · tatsächlich ~5 h** (Parser+Tests am 15.06., Deployment am
 22.06. mit den obigen Blockaden).
 ---
  
@@ -448,9 +452,9 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 - **Quickstart-Crash gefunden:** nach `cp .env.example .env` zeigte `API_LOG_PATH` auf
   `/var/log/honeypot/` (nur auf dem Server beschreibbar) → die App brach lokal beim Start
   ab. Erst durch echtes Durchtesten des Quickstarts entdeckt und robust gefixt.
-- Aufwand **geschätzt ~4 h · tatsächlich ~3 h** (ca. 13:55–16:55), in **~24 kleinen
+- Aufwand **geschätzt ~4 h · tatsächlich ~4 h** (ca. 13:55–17:30), in **~26 kleinen
   Commits** (bewusst einzeln & menschlich, kein Same-Second-Batch — genau der Punkt aus
-  dem Review).
+  dem Review). Sehr viel **Output** für die Zeit (Features + Härtung + Demo-Seed + Doku).
 
 ---
 
