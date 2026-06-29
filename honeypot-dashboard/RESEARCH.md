@@ -120,6 +120,25 @@ Man sieht **live** die feste Pipeline automatisierter SSH-Botnetze: *einloggen �
 (`botnet_detector.py`). Mehrere IPs, die im selben Minutenfenster mit demselben Muster
 feuern, deuten auf **koordinierte Botnetz-Aktivität** hin (gemeinsame Steuerung / geteilte Listen).
 
+## Tagesverlauf
+Über die ~7 Tage kamen im Schnitt **~9'800 Events/Tag** (~408/h) herein — durchgängig,
+**ohne Wochenend-Einbruch**. Genau das erwartet man, wenn keine Menschen, sondern
+Bots/Cron-Jobs feuern: ein Tag-Nacht- oder Werktags-Muster fehlt fast völlig. Einzelne
+Tagesspitzen entstehen durch koordinierte Wellen (siehe Botnet-Abschnitt), nicht durch
+„Bürozeiten". Das Dashboard zeigt diesen Verlauf live über `/api/analysis/timeline`
+(Angriffe pro Tag) plus die Angriffe-pro-Stunde-Kurve.
+
+## Konzentration auf einzelne IPs
+Der Beschuss ist extrem ungleich verteilt: rechnerisch ~56 Events pro IP im Schnitt,
+real aber **stark rechtslastig** — wenige Dauer-Brute-Forcer aus den Offshore-Netzen
+(Pfcloud UG, Offshore LC) stehen für den Grossteil, während die ~90 Google-IPs je nur
+wenige Events erzeugen (verteiltes Scanning). Dieselben **26 IPs zweier Hoster = ~60 %
+aller Events**. Die aggressivsten Einzel-IPs (mit Land, ASN und Erst/Letzt-Sichtung)
+listet das Dashboard jetzt live über `/api/analysis/attackers`.
+
+> Exakte Top-IP-Zahlen lassen sich direkt auf dem Server ziehen:
+> `sqlite3 /var/lib/honeypot/honeypot.db "SELECT src_ip, COUNT(*) c FROM attacks GROUP BY src_ip ORDER BY c DESC LIMIT 10;"`
+
 ## Fazit
 - Ein frisch ans Internet gehängter Server wird **innerhalb von Minuten** und danach
   **dauerhaft (~400 Events/h)** automatisiert angegriffen.
@@ -146,7 +165,8 @@ Was die Daten konkret für die Absicherung eines Servers bedeuten:
 
 ## Methodik & Grenzen
 - **Methodik:** Cowrie (SSH/Telnet-Emulation) → JSON-Log → Python-Parser (rotierte Logs,
-  Offset-Dedup, GeoIP+ASN via ip-api.com mit Cache) → SQLite → Flask-API → Dashboard/Analyse.
+  Offset-Dedup, GeoIP+ASN via ip-api.com mit Cache + Batch-Lookup) → SQLite → Flask-API →
+  Dashboard/Analyse.
 - **Grenzen:** „login.success" ist ein Cowrie-Artefakt (freizügige Fake-Auth), kein Beweis
   erratener Passwörter. GeoIP ist auf Hosting-Standort verzerrt (Länder ≠ Täter-Herkunft);
   die ASN-Sicht ist hier aussagekräftiger.
