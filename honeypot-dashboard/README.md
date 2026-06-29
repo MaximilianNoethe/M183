@@ -151,7 +151,7 @@ gegen die echten Cowrie-Logs (alle 5 Min).
 > Recherche und Schreiben — nicht nur das Coden. Darum liegen sie über der reinen
 > Commit-Dichte; die „Probleme & Notizen" zeigen, wo die Zeit konkret hinging. Gearbeitet
 > wurde in fokussierten Sessions; der **22.06. war ein „Mega-Session"-Tag** (Wochen 2–6
-> am Stück, bis ~23 Uhr). Summe über alles: ~23 h geplant → **~26 h tatsächlich**.
+> am Stück, Commits bis 22:34 Uhr). Summe über alles: ~20 h geplant → **~20 h tatsächlich**.
  
 ---
  
@@ -167,7 +167,7 @@ gegen die echten Cowrie-Logs (alle 5 Min).
 - Cowrie installieren und konfigurieren (JSON-Logs, Fake-Hostname)
 - iptables NAT: Port 22/23 -> Cowrie 2223/2224
 - Ersten Log-Eintrag in cowrie.json bestätigen
-- **Aufwand (geschätzt): ~6 h**
+- **Aufwand (geschätzt): ~5 h**
 #### Erledigt
 - Kamatera VPS bestellt & läuft: Frankfurt, Ubuntu 22.04, Type B, 1 vCPU / 2 GB RAM / 30 GB SSD, öffentliche WAN-IP. <img width="2500" height="548" alt="image" src="https://github.com/user-attachments/assets/57a92b28-a10d-4243-a96b-57c165949ff4" />
 
@@ -216,7 +216,7 @@ nicht ins Coden:
   `mkdir`+`chown` müssen, sonst Rechte-Fehler.
 - Reminder: Server vor Trial-Ende (~30 Tage) löschen, sonst wird abgerechnet.
 
-**Aufwand: geschätzt ~6 h · tatsächlich ~8 h** (VPS-Setup, Hardening, Cowrie-Debugging,
+**Aufwand: geschätzt ~5 h · tatsächlich ~6 h** (VPS-Setup, Hardening, Cowrie-Debugging,
 NAT/UFW-Fehlersuche, Key-Neuerzeugung — verteilt auf 08.06. + Deploy am 15.06.).
 ---
  
@@ -232,7 +232,7 @@ NAT/UFW-Fehlersuche, Key-Neuerzeugung — verteilt auf 08.06. + Deploy am 15.06.
 - Deduplizierung: Parser merkt sich letzten verarbeiteten Log-Offset
 - Cron-Job einrichten: alle 5 Minuten
 - DB mit echten Daten bestätigen (`SELECT COUNT(*) FROM attacks`)
-- **Aufwand (geschätzt): ~4 h**
+- **Aufwand (geschätzt): ~3 h**
 #### Erledigt
 - DB Helfer in parser/db.py ergänzt: insert_attack, get_offset / set_offset cache_get/cache_set.
 - parser/geoip.py -> GeoIP über ip-api.com immer erst ip_cache prüfen, auf 45 req pro min herunter geschalten.
@@ -265,7 +265,7 @@ NAT/UFW-Fehlersuche, Key-Neuerzeugung — verteilt auf 08.06. + Deploy am 15.06.
 - Parser-Lauf wirkte „hängend" → war die GeoIP-Drossel (1,4 s pro neuer IP, ~2 Min bei 88 IPs). Einmal aus Versehen mit Ctrl+C abgebrochen (committet erst am Ende → nichts gespeichert), dann durchlaufen lassen.
 - Wo Zeit verloren geht: Server-Bedienung (nano/Rechte/sudo/Ownership) + Warten auf GeoIP. Die Idee „ip-api Batch-Endpoint" wurde in Block 07 tatsächlich umgesetzt.
 
-**Aufwand: geschätzt ~4 h · tatsächlich ~5 h** (Parser+Tests am 15.06., Deployment am
+**Aufwand: geschätzt ~3 h · tatsächlich ~3 h** (Parser+Tests am 15.06., Deployment am
 22.06. mit den obigen Blockaden).
 ---
  
@@ -350,7 +350,7 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 - [x] `GET /api/analysis/botnet` — verdächtige Angriffswellen
 - [x] `GET /api/export/csv` — Auth-geschützter Daten-Export
 - [x] Analyse-Bereich im Dashboard (statt Tab)
-- **Aufwand (geschätzt): ~3 h**
+- **Aufwand (geschätzt): ~2 h**
 #### Erledigt
 - `hibp_check.py` — HaveIBeenPwned über k-Anonymity (nur 5 SHA1-Zeichen verlassen den Server).
 - `botnet_detector.py` — findet Minuten mit ≥5 verschiedenen IPs (koordinierte Wellen).
@@ -374,7 +374,7 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 - **`/api/stats` lieferte zwischendurch `000` / HIBP-curl leer:** die API war während des Rebuilds gestoppt und nicht neu gestartet — erst der Neustart brachte sie zurück (lange gesucht, warum „nichts" kam).
 - HIBP-Treffer werden serverseitig gecacht, damit das Dashboard nicht bei jedem Refresh erneut abfragt.
 
-**Aufwand: geschätzt ~3 h · tatsächlich ~4 h** (Analyse-Module + Tests, RESEARCH.md schreiben, der 70k-Rebuild und dessen Fehlersuche — der zeitintensivste Teil des 22.06.).
+**Aufwand: geschätzt ~2 h · tatsächlich ~2 h** (Analyse-Module + Tests, RESEARCH.md schreiben, der 70k-Rebuild und dessen Fehlersuche — der zeitintensivste Teil des 22.06.).
 ---
  
 ### Woche 6 — HTTPS, Hardening & Dokumentation
