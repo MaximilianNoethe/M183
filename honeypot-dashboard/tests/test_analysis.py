@@ -85,6 +85,14 @@ def test_providers_endpoint(client):
     assert rows and rows[0]["value"] == "AS64500 Testnet"
 
 
+def test_attackers_endpoint(client):
+    rows = client.get("/api/analysis/attackers", headers=AUTH).get_json()
+    assert rows
+    top = rows[0]
+    assert top["count"] >= 1
+    assert top["first_seen"] <= top["last_seen"]
+
+
 def test_passwords_endpoint(client, monkeypatch):
     monkeypatch.setattr(analysis_route.hibp_check, "check_password", lambda pw: 999)
     rows = client.get("/api/analysis/passwords", headers=AUTH).get_json()

@@ -79,6 +79,22 @@ def downloads():
     return jsonify([dict(r) for r in rows])
 
 
+@bp.route("/api/analysis/attackers")
+@requires_auth
+def attackers():
+    conn = db.get_connection()
+    try:
+        rows = conn.execute(
+            """SELECT src_ip, country, asn, COUNT(*) AS count,
+                      MIN(timestamp) AS first_seen, MAX(timestamp) AS last_seen
+               FROM attacks
+               GROUP BY src_ip ORDER BY count DESC LIMIT 15"""
+        ).fetchall()
+    finally:
+        conn.close()
+    return jsonify([dict(r) for r in rows])
+
+
 @bp.route("/api/analysis/providers")
 @requires_auth
 def providers():
