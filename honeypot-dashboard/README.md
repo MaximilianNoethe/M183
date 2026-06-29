@@ -19,9 +19,10 @@ Internet (echte Angreifer)
   GeoIP + ASN (ip-api, Cache)  ─────────────>  SQLite
         │
         ▼
-  [Flask API]   /api/attacks /stats /recent /search
-                /api/analysis/* (HIBP · Botnet · Befehle · Provider) · /api/export/csv
-        │   Basic Auth + Security-Header + Rate-Limit
+  [Flask API]   /api/health /attacks /stats /recent /search
+                /api/analysis/* (HIBP · Botnet · Befehle · Provider · Attacker · Timeline)
+                /api/export/csv · /api/export/json
+        │   Basic Auth + Bearer-Token + Security-Header + Rate-Limit
         ▼
   [nginx :443]  selbstsigniertes HTTPS  ──>  Flask :8080 (localhost)
         │
@@ -41,7 +42,15 @@ Internet (echte Angreifer)
 | 4 | Dashboard · World Map · Charts | Fertig —> Live mit echten Angriffen |
 | 5 | Analysis · HIBP · Botnet Detection | Fertig —> RESEARCH.md mit echten Funden |
 | 6 | HTTPS · Hardening · Documentation | Configs/Skripte fertig, Server-Deploy offen |
-  
+
+---
+
+## Dokumentation
+- **[`docs/API.md`](docs/API.md)** — alle API-Endpoints, Auth (Basic + Token), Beispiele
+- **[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)** — Schritt-für-Schritt Server-Runbook
+- **[`SECURITY.md`](SECURITY.md)** — Threat-Model, Härtung, Datenschutz (DSG)
+- **[`RESEARCH.md`](RESEARCH.md)** — Auswertung & Interpretation der echten Angriffe
+
 ---
  
 ## Lokal starten (Quickstart)
