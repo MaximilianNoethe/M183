@@ -1,5 +1,6 @@
-"""Security headers (every response) + rate limiting on the API."""
+"""Security headers (every response) + rate limiting + JSON errors on the API."""
 
+from flask import jsonify
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
@@ -23,3 +24,10 @@ def register_middleware(app):
         for key, value in HEADERS.items():
             resp.headers[key] = value
         return resp
+
+    def json_error(status, message):
+        return jsonify(error=message), status
+
+    app.register_error_handler(404, lambda e: json_error(404, "not found"))
+    app.register_error_handler(429, lambda e: json_error(429, "rate limit exceeded"))
+    app.register_error_handler(500, lambda e: json_error(500, "internal server error"))

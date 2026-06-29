@@ -70,6 +70,12 @@ def test_search_injection_safe(client):
     assert rows == []
 
 
+def test_unknown_route_returns_json(client):
+    resp = client.get("/api/does-not-exist", headers=AUTH)
+    assert resp.status_code == 404
+    assert resp.get_json()["error"] == "not found"
+
+
 def test_security_headers(client):
     resp = client.get("/api/stats", headers=AUTH)
     assert resp.headers["X-Frame-Options"] == "DENY"
