@@ -83,7 +83,7 @@ def search():
     }
     clauses, params = [], []
     for arg, clause in available.items():
-        value = request.args.get(arg, "")
+        value = request.args.get(arg, "").strip()[:64]  # cap to keep queries bounded
         if value:
             clauses.append(clause)
             params.append(f"%{value}%")

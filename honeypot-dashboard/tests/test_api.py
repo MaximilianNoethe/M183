@@ -81,6 +81,11 @@ def test_search_injection_safe(client):
     assert rows == []
 
 
+def test_search_caps_long_input(client):
+    rows = client.get("/api/search?username=" + "a" * 5000, headers=AUTH).get_json()
+    assert rows == []
+
+
 def test_unknown_route_returns_json(client):
     resp = client.get("/api/does-not-exist", headers=AUTH)
     assert resp.status_code == 404
