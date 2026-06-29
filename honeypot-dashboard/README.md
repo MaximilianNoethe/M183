@@ -309,6 +309,39 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 - Honeypot-Ports (2223/2224) dürfen NICHT von Fail2Ban geblockt werden — die sollen ja Angriffe fangen. Jail nur auf `:2222`.
 ---
  
+### Block 07 — Erweiterungen, Härtung & Doku
+
+**Period:** `29.06.2026`
+**Status:** Letzter Arbeitstag — Funktionsumfang, Sicherheit und Doku ausgebaut
+
+#### Geplant
+- Mehr Auswertung sichtbar machen (aggressivste IPs, Tagesverlauf, Zeitfenster)
+- API härten (Token-Auth, JSON-Fehler, Health-Check, Logging, Input-Limits)
+- GeoIP beschleunigen (Batch statt seriell)
+- Doku ergänzen, die ein Reviewer/Teammate sofort versteht (API, Security, Deployment)
+#### Erledigt
+- **Analyse:** neuer Health-Endpoint, `/api/analysis/attackers` (aggressivste IPs mit
+  Erst/Letzt-Sichtung), `/api/analysis/timeline` (Angriffe pro Tag), `/api/stats` um
+  Zeitraum + aktivste Stunde erweitert. Dashboard zeigt das in neuen Panels/Charts +
+  KPI-Karten.
+- **Härtung:** Bearer-Token als Auth-Alternative zu Basic-Auth, JSON-Antworten für
+  404/429/500, längenbegrenzte Sucheingaben, Request-Logging, zusätzliche Security-Header
+  (Referrer-Policy, Permissions-Policy).
+- **Performance:** GeoIP-Batch-Lookup (bis 100 IPs pro Request) — der Parser wärmt den
+  Cache jetzt mit **einem** Request vor, statt 88× einzeln mit 1,4 s Drossel zu warten.
+- **UX:** manueller Refresh-Button, JSON-Export zusätzlich zu CSV.
+- **Doku:** `docs/API.md`, `SECURITY.md`, `docs/DEPLOYMENT.md` neu; RESEARCH + README
+  ergänzt. Tests von 28 → **37 grün**, ruff/CI sauber.
+#### Probleme & Notizen
+- **Tests grün halten beim Batch-GeoIP:** der neue `warm_cache`-Aufruf im Parser hätte
+  die Parser-Tests live gegen ip-api.com laufen lassen (die Fixtures sind ungecachte
+  RFC-5737-IPs). Fix: `warm_cache` in der `fake_geo`-Fixture stubben + ein eigener Test
+  mit gemocktem `requests.post`. Hätte sonst die Tests langsam/flaky gemacht.
+- Aufwand ~3 h, in **~22 kleinen Commits** (bewusst einzeln & menschlich, kein
+  Same-Second-Batch — genau der Punkt aus dem Review).
+
+---
+
 ## Research Findings
 
 > Echte Daten vom Honeypot. Volle Auswertung + Interpretation in **[`RESEARCH.md`](RESEARCH.md)**.
