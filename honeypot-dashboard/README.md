@@ -72,30 +72,35 @@ cp .env.example .env          # Werte anpassen: DASHBOARD_USER/PASSWORD, SECRET_
 **Tests laufen lassen** — beweist, dass Parser + GeoIP lokal funktionieren:
 
 ```bash
-pytest tests/ -v              # 28 Tests (Parser, API, Analyse)
+pytest tests/ -v              # 38 Tests (Parser, API, Analyse)
 ```
 
-**Parser lokal ausprobieren** — schreibt die 20 Beispiel-Events des Fixtures in eine
-lokale SQLite-DB (optional, macht echte GeoIP-Abfragen → ~30s beim ersten Mal):
+**Dashboard lokal mit Beispieldaten ansehen** (empfohlen) — füllt eine lokale DB mit
+Demo-Angriffen (inkl. Standorten, Provider, einer Botnet-Welle und `wget`-Befehlen),
+damit **jedes** Panel inkl. Weltkarte gefüllt ist:
 
 ```bash
-COWRIE_LOG_PATH=tests/fixtures/sample_cowrie.json DATABASE_PATH=local.db \
+DATABASE_PATH=local.db python3 scripts/seed_demo.py   # ~68 Beispiel-Angriffe
+DATABASE_PATH=local.db python3 -m api.app             # Flask auf http://localhost:8080
+```
+
+Dann `http://localhost:8080` öffnen und mit `DASHBOARD_USER` / `DASHBOARD_PASSWORD`
+aus deiner `.env` einloggen (Default: `admin` / `changeme`). Sichtbar: volle Weltkarte,
+Statistik-Karten, Charts, Live-Feed, der Analyse-Bereich (Befehle, HIBP, Botnet,
+Provider, aggressivste IPs) und die Suche.
+
+> Die Demo-Daten sind klar gekennzeichnete Beispiel-Angriffe (RFC-5737-IPs) — nur zum
+> Ausprobieren der Oberfläche. Die **echten** Funde stehen in [`RESEARCH.md`](RESEARCH.md).
+
+**Alternativ: die echte Pipeline mit dem Parser** — schreibt die 20 Events des Fixtures
+über echte GeoIP-Abfragen in die DB (~30s). Die Weltkarte bleibt hier leer, weil die
+Test-IPs keine Geo-Position haben:
+
+```bash
+COWRIE_LOG_PATH=tests/fixtures/sample_cowrie.json DATABASE_PATH=fixture.db \
   python3 -m parser.log_parser
-sqlite3 local.db "SELECT COUNT(*) FROM attacks;"
+sqlite3 fixture.db "SELECT COUNT(*) FROM attacks;"
 ```
-
-**Dashboard lokal ansehen** — API gegen die eben gefüllte `local.db` starten:
-
-```bash
-DATABASE_PATH=local.db python3 -m api.app    # Flask auf http://localhost:8080
-```
-
-Dann `http://localhost:8080` im Browser öffnen und mit `DASHBOARD_USER` /
-`DASHBOARD_PASSWORD` aus deiner `.env` einloggen (Default: `admin` / `changeme`).
-Sichtbar: Statistik-Karten, Charts (Top-Passwörter, Angriffe/Stunde), Live-Feed,
-der Analyse-Bereich (Befehle, HIBP, Botnet, Provider) und die Suche. Die **Weltkarte**
-bleibt mit den Test-IPs leer (RFC-5737-Adressen haben keine Geo-Position) — auf dem
-Server zeigt sie die echten Angriffe.
 
 Auf dem Server läuft der Parser nicht manuell, sondern automatisch via systemd-Timer
 gegen die echten Cowrie-Logs (alle 5 Min).
