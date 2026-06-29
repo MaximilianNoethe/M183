@@ -150,7 +150,8 @@ gegen die echten Cowrie-Logs (alle 5 Min).
 > Debugging, Warten auf langsame Schritte (GeoIP-Drossel, 70k-Zeilen-DB-Rebuild),
 > Recherche und Schreiben — nicht nur das Coden. Darum liegen sie über der reinen
 > Commit-Dichte; die „Probleme & Notizen" zeigen, wo die Zeit konkret hinging. Gearbeitet
-> wurde in fokussierten Abend-Sessions (teils bis ~23 Uhr).
+> wurde in fokussierten Sessions; der **22.06. war ein „Mega-Session"-Tag** (Wochen 2–6
+> am Stück, bis ~23 Uhr). Summe über alles: ~23 h geplant → **~26 h tatsächlich**.
  
 ---
  
@@ -215,8 +216,8 @@ nicht ins Coden:
   `mkdir`+`chown` müssen, sonst Rechte-Fehler.
 - Reminder: Server vor Trial-Ende (~30 Tage) löschen, sonst wird abgerechnet.
 
-**Aufwand: geschätzt ~6 h · tatsächlich ~10 h** (VPS-Setup, Hardening, Cowrie-Debugging,
-NAT/UFW-Fehlersuche, Key-Neuerzeugung).
+**Aufwand: geschätzt ~6 h · tatsächlich ~8 h** (VPS-Setup, Hardening, Cowrie-Debugging,
+NAT/UFW-Fehlersuche, Key-Neuerzeugung — verteilt auf 08.06. + Deploy am 15.06.).
 ---
  
 ### Woche 2 — Log-Parser & Datenbank-Pipeline
@@ -264,8 +265,8 @@ NAT/UFW-Fehlersuche, Key-Neuerzeugung).
 - Parser-Lauf wirkte „hängend" → war die GeoIP-Drossel (1,4 s pro neuer IP, ~2 Min bei 88 IPs). Einmal aus Versehen mit Ctrl+C abgebrochen (committet erst am Ende → nichts gespeichert), dann durchlaufen lassen.
 - Wo Zeit verloren geht: Server-Bedienung (nano/Rechte/sudo/Ownership) + Warten auf GeoIP. Die Idee „ip-api Batch-Endpoint" wurde in Block 07 tatsächlich umgesetzt.
 
-**Aufwand: geschätzt ~4 h · tatsächlich ~6 h** (Parser+Tests ~3 h, Deployment-Session
-~3 h durch die obigen Blockaden).
+**Aufwand: geschätzt ~4 h · tatsächlich ~5 h** (Parser+Tests am 15.06., Deployment am
+22.06. mit den obigen Blockaden).
 ---
  
 ### Woche 3 — Flask-REST-API
@@ -282,7 +283,7 @@ NAT/UFW-Fehlersuche, Key-Neuerzeugung).
 - [x] Security Headers Middleware (CSP, X-Frame-Options, etc.)
 - [x] Rate Limiting via `flask-limiter` (60 req/min)
 - [x] Alle SQL-Queries: nur Parameterized Statements
-- **Aufwand (geschätzt): ~3 h**
+- **Aufwand (geschätzt): ~2 h**
 #### Erledigt
 - App-Factory `api/app.py` baut Flask, registriert Blueprints + Middleware, liefert das Dashboard unter `/`.
 - Endpoints: `/api/attacks` (Kartendaten), `/api/stats` (Totals + Top-10 Usernames/Passwörter/Länder + Angriffe pro Stunde), `/api/recent` (letzte 50), `/api/search` (parametrisierte Filter).
@@ -297,7 +298,7 @@ NAT/UFW-Fehlersuche, Key-Neuerzeugung).
 - Beim Server-Deploy lief der Service in einen **Crash-Loop** (`NotImplementedError`): der `git pull` auf dem Server war nicht durchgelaufen → der Dienst startete noch die Stub-Version. Lange gerätselt, bis klar war, dass der Server schlicht alten Code hatte. Fix: Service stoppen, `sudo git -C /opt/honeypot pull`, neu starten.
 - API lauscht bewusst nur auf `127.0.0.1:8080` (nginx + HTTPS folgen in Woche 6) → Zugriff vorerst nur per SSH-Tunnel, was das Testen umständlicher machte.
 
-**Aufwand: geschätzt ~3 h · tatsächlich ~5 h** (Bau + 18 Tests, dazu die Crash-Loop-Fehlersuche beim Deploy).
+**Aufwand: geschätzt ~2 h · tatsächlich ~2 h** (Bau + 18 Tests, dazu die Crash-Loop-Fehlersuche beim Deploy am 22.06.).
 ---
  
 ### Woche 4 — Dashboard-Frontend
@@ -314,7 +315,7 @@ NAT/UFW-Fehlersuche, Key-Neuerzeugung).
 - [x] Auto-Refresh alle 30 Sekunden (kein Full-Page-Reload)
 - [x] Design: Terminal-Ästhetik (#0a0a0a bg, #00ff41 text, Monospace)
 - [x] Alles via `textContent` rendern — kein `innerHTML`
-- **Aufwand (geschätzt): ~3 h**
+- **Aufwand (geschätzt): ~2 h**
 #### Erledigt
 - Single-Page-Dashboard (`frontend/templates/dashboard.html`) mit Leaflet-Weltkarte (CARTO Dark), Chart.js und Live-Feed, Terminal-Optik.
 - Karte: ein grüner Kreis pro Angreifer-IP, Grösse nach `log(count)`, Popup mit IP/Land/Anzahl.
@@ -334,7 +335,7 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 - **SSH-Tunnel nötig** (`ssh -p 2222 -L 8080:127.0.0.1:8080 …`), weil die API nur auf localhost lauscht. Das „Connection refused" im Tunnel war zuerst verwirrend — es hiess in Wahrheit: der Service lief noch gar nicht (siehe Crash-Loop in Woche 3).
 - Erkenntnisse aus den echten Daten: Niederlande massiv überrepräsentiert (Hosting-Infrastruktur, nicht Standort der Angreifer); klarer Angriffs-Peak um ~04:00 und ~15:00 Uhr; `alpine`/`pi` deuten auf gezielte IoT-Angriffe.
 
-**Aufwand: geschätzt ~3 h · tatsächlich ~5 h** (Bau von Karte/Charts/Feed + Tunnel-/Anzeige-Fehlersuche).
+**Aufwand: geschätzt ~2 h · tatsächlich ~2 h** (Bau von Karte/Charts/Feed + Tunnel-/Anzeige-Fehlersuche, 22.06.).
 ---
  
 ### Woche 5 — Analyse & erweiterte Features
@@ -349,7 +350,7 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 - [x] `GET /api/analysis/botnet` — verdächtige Angriffswellen
 - [x] `GET /api/export/csv` — Auth-geschützter Daten-Export
 - [x] Analyse-Bereich im Dashboard (statt Tab)
-- **Aufwand (geschätzt): ~5 h**
+- **Aufwand (geschätzt): ~3 h**
 #### Erledigt
 - `hibp_check.py` — HaveIBeenPwned über k-Anonymity (nur 5 SHA1-Zeichen verlassen den Server).
 - `botnet_detector.py` — findet Minuten mit ≥5 verschiedenen IPs (koordinierte Wellen).
@@ -373,7 +374,7 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 - **`/api/stats` lieferte zwischendurch `000` / HIBP-curl leer:** die API war während des Rebuilds gestoppt und nicht neu gestartet — erst der Neustart brachte sie zurück (lange gesucht, warum „nichts" kam).
 - HIBP-Treffer werden serverseitig gecacht, damit das Dashboard nicht bei jedem Refresh erneut abfragt.
 
-**Aufwand: geschätzt ~5 h · tatsächlich ~8 h** (Analyse-Module + Tests, RESEARCH.md schreiben, der 70k-Rebuild und dessen Fehlersuche).
+**Aufwand: geschätzt ~3 h · tatsächlich ~4 h** (Analyse-Module + Tests, RESEARCH.md schreiben, der 70k-Rebuild und dessen Fehlersuche — der zeitintensivste Teil des 22.06.).
 ---
  
 ### Woche 6 — HTTPS, Hardening & Dokumentation
@@ -389,7 +390,7 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 - [x] Alle Secrets in `.env` — keine Hardcoded Values
 - [x] `RESEARCH.md` schreiben (Findings, Statistiken, Erkenntnisse)
 - [x] README finalisieren mit Screenshots + Architektur-Diagramm
-- **Aufwand (geschätzt): ~3 h**
+- **Aufwand (geschätzt): ~2 h**
 #### Erledigt
 - `nginx/honeypot.conf` — Reverse Proxy auf Flask `127.0.0.1:8080`, HTTP→HTTPS-Redirect, HSTS.
 - `scripts/setup_https.sh` — installiert nginx, generiert selbstsigniertes Zertifikat, aktiviert die Config, öffnet UFW 80/443.
@@ -404,7 +405,7 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 - **Honeypot-Ports (2223/2224) dürfen NICHT von Fail2Ban geblockt werden** — die sollen ja Angriffe fangen. Jail deshalb bewusst nur auf den echten Admin-SSH `:2222`.
 - **CI-Pipeline lag zuerst falsch:** ich hatte sie unter `honeypot-dashboard/.github/` angelegt, GitHub startet Workflows aber **nur vom Repo-Root**. Verschoben nach `M183/.github/workflows/` mit `defaults.run.working-directory: honeypot-dashboard`, damit Lint/Tests im Unterordner laufen.
 
-**Aufwand: geschätzt ~3 h · tatsächlich ~5 h** (nginx/Fail2Ban-Configs, CI einrichten + Pfad-Fix, Doku + RESEARCH-Schutzmassnahmen).
+**Aufwand: geschätzt ~2 h · tatsächlich ~2 h** (nginx/Fail2Ban-Configs, CI einrichten + Pfad-Fix, Doku + RESEARCH-Schutzmassnahmen, Ende des 22.06.).
 ---
  
 ### Block 07 — Erweiterungen, Härtung & Doku
@@ -447,8 +448,9 @@ Live mit echten Daten (11'652 Angriffe, 98 IPs, 30 Länder):
 - **Quickstart-Crash gefunden:** nach `cp .env.example .env` zeigte `API_LOG_PATH` auf
   `/var/log/honeypot/` (nur auf dem Server beschreibbar) → die App brach lokal beim Start
   ab. Erst durch echtes Durchtesten des Quickstarts entdeckt und robust gefixt.
-- Aufwand **geschätzt ~4 h · tatsächlich ~6 h**, in **~23 kleinen Commits** (bewusst
-  einzeln & menschlich, kein Same-Second-Batch — genau der Punkt aus dem Review).
+- Aufwand **geschätzt ~4 h · tatsächlich ~3 h** (ca. 13:55–16:55), in **~24 kleinen
+  Commits** (bewusst einzeln & menschlich, kein Same-Second-Batch — genau der Punkt aus
+  dem Review).
 
 ---
 
