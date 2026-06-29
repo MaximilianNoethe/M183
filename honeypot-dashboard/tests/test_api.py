@@ -103,3 +103,5 @@ def test_security_headers(client):
     resp = client.get("/api/stats", headers=AUTH)
     assert resp.headers["X-Frame-Options"] == "DENY"
     assert resp.headers["X-Content-Type-Options"] == "nosniff"
+    assert resp.headers["Referrer-Policy"] == "no-referrer"
+    assert "camera=()" in resp.headers["Permissions-Policy"]
