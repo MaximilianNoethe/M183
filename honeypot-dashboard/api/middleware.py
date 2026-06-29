@@ -14,7 +14,16 @@ def _configure_logging():
     if _log.handlers:
         return
     path = os.getenv("API_LOG_PATH")
-    handler = logging.FileHandler(path) if path else logging.StreamHandler()
+    try:
+        if path:
+            directory = os.path.dirname(path)
+            if directory:
+                os.makedirs(directory, exist_ok=True)
+            handler = logging.FileHandler(path)
+        else:
+            handler = logging.StreamHandler()
+    except OSError:
+        handler = logging.StreamHandler()  # fall back to stderr if the path isn't writable
     handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
     _log.addHandler(handler)
     _log.setLevel(logging.INFO)

@@ -93,6 +93,17 @@ def test_unknown_route_returns_json(client):
     assert resp.get_json()["error"] == "not found"
 
 
+def test_logging_falls_back_on_unwritable_path(tmp_path, monkeypatch):
+    from api import middleware
+    blocker = tmp_path / "afile"
+    blocker.write_text("x")  # a file, so makedirs on a path "under" it must fail
+    monkeypatch.setenv("API_LOG_PATH", str(blocker / "api.log"))
+    middleware._log.handlers.clear()
+    middleware._configure_logging()  # must not raise
+    assert middleware._log.handlers
+    middleware._log.handlers.clear()
+
+
 def test_requests_are_logged(client, caplog):
     with caplog.at_level(logging.INFO, logger="honeypot.api"):
         client.get("/api/stats", headers=AUTH)
