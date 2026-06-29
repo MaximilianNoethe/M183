@@ -26,6 +26,7 @@ def fake_geo(monkeypatch):
                           "latitude": 1.0, "longitude": 2.0,
                           "asn": "AS64500 Testnet", "org": "TestOrg"},
     )
+    monkeypatch.setattr(geoip, "warm_cache", lambda conn, ips: 0)
 
 
 def test_init_db_creates_tables(temp_db):
@@ -176,6 +177,28 @@ def test_run_all_reads_rotated_logs(tmp_path, temp_db, fake_geo, monkeypatch):
     main.write_text(line % (2, 2))
     monkeypatch.setenv("COWRIE_LOG_PATH", str(main))
     assert log_parser.run_all(db_path=temp_db) == 2
+
+
+def test_warm_cache_batch(temp_db, monkeypatch):
+    batch = [{"status": "success", "query": "192.0.2.7", "country": "Batchland",
+              "city": "Batch City", "lat": 9.0, "lon": 8.0,
+              "as": "AS64501 Batchnet", "org": "BatchOrg"}]
+
+    class FakeResp:
+        def json(self):
+            return batch
+
+    monkeypatch.setattr(geoip.requests, "post", lambda *a, **k: FakeResp())
+    conn = db.get_connection(temp_db)
+    try:
+        found = geoip.warm_cache(conn, ["192.0.2.7", "192.0.2.7"])
+        conn.commit()
+        cached = db.cache_get(conn, "192.0.2.7")
+    finally:
+        conn.close()
+    assert found == 1
+    assert cached["country"] == "Batchland"
+    assert cached["asn"] == "AS64501 Batchnet"
 
 
 def test_geoip_uses_cache_first(temp_db, monkeypatch):

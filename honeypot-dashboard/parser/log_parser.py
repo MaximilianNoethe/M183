@@ -38,37 +38,44 @@ def run(log_path=None, db_path=None):
         offset = db.get_offset(conn, log_path)
         with open(log_path, "r", encoding="utf-8") as fh:
             fh.seek(offset)
-            for line in fh:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    event = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                if event.get("eventid") not in TRACKED:
-                    continue
-                ip = event.get("src_ip")
-                if not ip:
-                    continue
-                geo = geoip.get_geo(ip, conn)
-                db.insert_attack(
-                    conn,
-                    timestamp=event.get("timestamp"),
-                    src_ip=ip,
-                    event_type=event.get("eventid"),
-                    username=event.get("username"),
-                    password=event.get("password"),
-                    raw_command=event.get("input") or event.get("url"),
-                    country=geo["country"],
-                    city=geo["city"],
-                    latitude=geo["latitude"],
-                    longitude=geo["longitude"],
-                    asn=geo["asn"],
-                    org=geo["org"],
-                )
-                inserted += 1
+            lines = fh.readlines()
             new_offset = fh.tell()
+
+        events = []
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if event.get("eventid") not in TRACKED or not event.get("src_ip"):
+                continue
+            events.append(event)
+
+        # one batch GeoIP call warms the cache for every new IP up front
+        geoip.warm_cache(conn, [e["src_ip"] for e in events])
+
+        for event in events:
+            ip = event["src_ip"]
+            geo = geoip.get_geo(ip, conn)
+            db.insert_attack(
+                conn,
+                timestamp=event.get("timestamp"),
+                src_ip=ip,
+                event_type=event.get("eventid"),
+                username=event.get("username"),
+                password=event.get("password"),
+                raw_command=event.get("input") or event.get("url"),
+                country=geo["country"],
+                city=geo["city"],
+                latitude=geo["latitude"],
+                longitude=geo["longitude"],
+                asn=geo["asn"],
+                org=geo["org"],
+            )
+            inserted += 1
         db.set_offset(conn, log_path, new_offset, datetime.now(timezone.utc).isoformat())
         conn.commit()
     finally:
