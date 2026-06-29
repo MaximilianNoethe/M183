@@ -40,6 +40,7 @@
   HoneypotMap.init();
   HoneypotCharts.init();
   HoneypotSearch.init();
+  document.getElementById("refresh-btn").addEventListener("click", refresh);
   refresh();
   setInterval(refresh, 30000);
 })();
