@@ -34,6 +34,14 @@ def test_requires_auth(client):
     assert client.get("/api/stats").status_code == 401
 
 
+def test_bearer_token_auth(client, monkeypatch):
+    monkeypatch.setenv("API_TOKEN", "s3cret-token")
+    headers = {"Authorization": "Bearer s3cret-token"}
+    assert client.get("/api/stats", headers=headers).status_code == 200
+    bad = {"Authorization": "Bearer wrong"}
+    assert client.get("/api/stats", headers=bad).status_code == 401
+
+
 def test_stats(client):
     data = client.get("/api/stats", headers=AUTH).get_json()
     assert data["total"] == 2
