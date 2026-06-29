@@ -1,8 +1,23 @@
 """Security headers (every response) + rate limiting + JSON errors on the API."""
 
-from flask import jsonify
+import logging
+import os
+
+from flask import jsonify, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+
+_log = logging.getLogger("honeypot.api")
+
+
+def _configure_logging():
+    if _log.handlers:
+        return
+    path = os.getenv("API_LOG_PATH")
+    handler = logging.FileHandler(path) if path else logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+    _log.addHandler(handler)
+    _log.setLevel(logging.INFO)
 
 HEADERS = {
     "X-Content-Type-Options": "nosniff",
@@ -18,11 +33,14 @@ HEADERS = {
 
 def register_middleware(app):
     Limiter(get_remote_address, app=app, default_limits=["60 per minute"])
+    _configure_logging()
 
     @app.after_request
     def set_headers(resp):
         for key, value in HEADERS.items():
             resp.headers[key] = value
+        _log.info("%s %s %s %s", get_remote_address(), request.method,
+                  request.path, resp.status_code)
         return resp
 
     def json_error(status, message):

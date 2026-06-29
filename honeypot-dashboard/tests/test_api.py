@@ -1,4 +1,5 @@
 import base64
+import logging
 
 import pytest
 
@@ -90,6 +91,12 @@ def test_unknown_route_returns_json(client):
     resp = client.get("/api/does-not-exist", headers=AUTH)
     assert resp.status_code == 404
     assert resp.get_json()["error"] == "not found"
+
+
+def test_requests_are_logged(client, caplog):
+    with caplog.at_level(logging.INFO, logger="honeypot.api"):
+        client.get("/api/stats", headers=AUTH)
+    assert any("/api/stats" in r.message for r in caplog.records)
 
 
 def test_security_headers(client):
