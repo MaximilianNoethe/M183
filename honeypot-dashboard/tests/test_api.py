@@ -34,6 +34,14 @@ def test_requires_auth(client):
     assert client.get("/api/stats").status_code == 401
 
 
+def test_health_no_auth(client):
+    data = client.get("/api/health").get_json()
+    assert data["status"] == "ok"
+    assert data["database"] is True
+    assert data["total_attacks"] == 2
+    assert data["last_attack"] == "2026-06-22T12:00:00Z"
+
+
 def test_bearer_token_auth(client, monkeypatch):
     monkeypatch.setenv("API_TOKEN", "s3cret-token")
     headers = {"Authorization": "Bearer s3cret-token"}
