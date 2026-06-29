@@ -19,6 +19,11 @@
       document.getElementById("stat-total").textContent = stats.total;
       document.getElementById("stat-ips").textContent = stats.unique_ips;
       document.getElementById("stat-countries").textContent = stats.countries;
+      document.getElementById("stat-busiest").textContent = stats.busiest_hour
+        ? stats.busiest_hour.hour + "h · " + stats.busiest_hour.count : "–";
+      document.getElementById("stat-range").textContent =
+        (stats.first_seen && stats.last_seen)
+          ? stats.first_seen.slice(0, 10) + " → " + stats.last_seen.slice(0, 10) : "–";
       HoneypotCharts.update(stats);
       HoneypotCharts.updateDaily(timeline);
       HoneypotMap.update(attacks);
