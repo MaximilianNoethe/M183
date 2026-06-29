@@ -85,6 +85,12 @@ def test_providers_endpoint(client):
     assert rows and rows[0]["value"] == "AS64500 Testnet"
 
 
+def test_timeline_endpoint(client):
+    rows = client.get("/api/analysis/timeline", headers=AUTH).get_json()
+    assert rows and rows[0]["day"] == "2026-06-22"
+    assert rows[0]["count"] >= 6
+
+
 def test_attackers_endpoint(client):
     rows = client.get("/api/analysis/attackers", headers=AUTH).get_json()
     assert rows

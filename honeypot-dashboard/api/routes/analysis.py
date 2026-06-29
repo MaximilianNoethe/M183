@@ -79,6 +79,21 @@ def downloads():
     return jsonify([dict(r) for r in rows])
 
 
+@bp.route("/api/analysis/timeline")
+@requires_auth
+def timeline():
+    conn = db.get_connection()
+    try:
+        rows = conn.execute(
+            """SELECT substr(timestamp, 1, 10) AS day, COUNT(*) AS count,
+                      COUNT(DISTINCT src_ip) AS ips
+               FROM attacks GROUP BY day ORDER BY day"""
+        ).fetchall()
+    finally:
+        conn.close()
+    return jsonify([dict(r) for r in rows])
+
+
 @bp.route("/api/analysis/attackers")
 @requires_auth
 def attackers():
