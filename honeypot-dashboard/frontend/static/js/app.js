@@ -10,15 +10,17 @@
 
   async function refresh() {
     try {
-      const [stats, attacks, recent] = await Promise.all([
+      const [stats, attacks, recent, timeline] = await Promise.all([
         getJSON("/api/stats"),
         getJSON("/api/attacks"),
         getJSON("/api/recent"),
+        getJSON("/api/analysis/timeline"),
       ]);
       document.getElementById("stat-total").textContent = stats.total;
       document.getElementById("stat-ips").textContent = stats.unique_ips;
       document.getElementById("stat-countries").textContent = stats.countries;
       HoneypotCharts.update(stats);
+      HoneypotCharts.updateDaily(timeline);
       HoneypotMap.update(attacks);
       if (!HoneypotSearch.isActive()) HoneypotFeed.update(recent);
       HoneypotAnalysis.update().catch(function () {});

@@ -1,6 +1,6 @@
-// Two Chart.js charts: top passwords (bar) and attacks per hour (line).
+// Chart.js charts: top passwords (bar), attacks per hour and per day (line).
 const HoneypotCharts = (function () {
-  let passwords, hourly;
+  let passwords, hourly, daily;
 
   function baseConfig(type) {
     return {
@@ -27,6 +27,7 @@ const HoneypotCharts = (function () {
   function init() {
     passwords = new Chart(document.getElementById("chart-passwords"), baseConfig("bar"));
     hourly = new Chart(document.getElementById("chart-hourly"), baseConfig("line"));
+    daily = new Chart(document.getElementById("chart-daily"), baseConfig("bar"));
   }
 
   function update(stats) {
@@ -39,5 +40,11 @@ const HoneypotCharts = (function () {
     hourly.update();
   }
 
-  return { init: init, update: update };
+  function updateDaily(rows) {
+    daily.data.labels = rows.map(function (r) { return r.day; });
+    daily.data.datasets[0].data = rows.map(function (r) { return r.count; });
+    daily.update();
+  }
+
+  return { init: init, update: update, updateDaily: updateDaily };
 })();

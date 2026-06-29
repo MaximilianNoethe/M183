@@ -27,12 +27,19 @@ const HoneypotAnalysis = (function () {
   }
 
   async function update() {
-    const [commands, passwords, botnet, downloads, providers] = await Promise.all([
+    const [commands, passwords, botnet, downloads, providers, attackers] = await Promise.all([
       getJSON("/api/analysis/commands"),
       getJSON("/api/analysis/passwords"),
       getJSON("/api/analysis/botnet"),
       getJSON("/api/analysis/downloads"),
       getJSON("/api/analysis/providers"),
+      getJSON("/api/analysis/attackers"),
+    ]);
+    fillTable("#attacker-table", attackers, [
+      function (r) { return r.src_ip; },
+      function (r) { return r.country; },
+      function (r) { return r.asn; },
+      function (r) { return r.count; },
     ]);
     fillTable("#cmd-table", commands, [function (r) { return r.value; }, function (r) { return r.count; }]);
     fillTable("#hibp-table", passwords, [
