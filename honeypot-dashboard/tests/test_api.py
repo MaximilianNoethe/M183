@@ -55,6 +55,9 @@ def test_stats(client):
     assert data["total"] == 2
     assert data["unique_ips"] == 2
     assert {"value": "root", "count": 1} in data["top_usernames"]
+    assert data["first_seen"] == "2026-06-22T11:00:00Z"
+    assert data["last_seen"] == "2026-06-22T12:00:00Z"
+    assert data["busiest_hour"]["count"] == 1
 
 
 def test_attacks_map(client):

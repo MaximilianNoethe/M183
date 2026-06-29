@@ -16,7 +16,9 @@ def stats():
         totals = conn.execute(
             """SELECT COUNT(*) AS total,
                       COUNT(DISTINCT src_ip) AS unique_ips,
-                      COUNT(DISTINCT country) AS countries
+                      COUNT(DISTINCT country) AS countries,
+                      MIN(timestamp) AS first_seen,
+                      MAX(timestamp) AS last_seen
                FROM attacks"""
         ).fetchone()
         top_usernames = conn.execute(
@@ -40,14 +42,19 @@ def stats():
         ).fetchall()
     finally:
         conn.close()
+    per_hour = [dict(r) for r in per_hour]
+    busiest = max(per_hour, key=lambda r: r["count"], default=None)
     return jsonify({
         "total": totals["total"],
         "unique_ips": totals["unique_ips"],
         "countries": totals["countries"],
+        "first_seen": totals["first_seen"],
+        "last_seen": totals["last_seen"],
+        "busiest_hour": busiest,
         "top_usernames": [dict(r) for r in top_usernames],
         "top_passwords": [dict(r) for r in top_passwords],
         "top_countries": [dict(r) for r in top_countries],
-        "per_hour": [dict(r) for r in per_hour],
+        "per_hour": per_hour,
     })
 
 
